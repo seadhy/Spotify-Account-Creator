@@ -1,9 +1,11 @@
 # Spotify Account Creator + Follower 
  Guilded Account Creator + Follow account or playlist with fully httpx request based.
 
-## 💻 Preview Video
+## 💻 Preview
 
-Soon.
+![Console_Image](https://user-images.githubusercontent.com/82868382/202025657-b589bdf5-01d4-49b7-81f9-cc8a8b785518.png)
+
+![Followers_Image](https://user-images.githubusercontent.com/82868382/202025646-c3118ac8-1126-4045-8493-bcb0150f0a74.png)
 
 ## 👾 Features
 - Fully request based creator
