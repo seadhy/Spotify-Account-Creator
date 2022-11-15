@@ -170,170 +170,190 @@ class Gen:
             self.console.printi('Followed to account.')
 
     def changeAvatar(self, session: httpx.Client, client_token: str, token: str, account_id: str):
+        while True:
+            try:
+                avatar = self.faker.getAvatar()
 
-        avatar = self.faker.getAvatar()
+                headers = {
+                    "Host": "image-upload.spotify.com",
+                    "Accept": "application/json",
+                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Content-Type": "image/jpeg",
+                    "client-token": client_token,
+                    "Origin": "https://open.spotify.com",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "authorization": f"Bearer {token}",
+                    "Referer": "https://open.spotify.com/",
+                    "Connection": "keep-alive",
+                    "TE": "trailers"
+                }
 
-        headers = {
-            "Host": "image-upload.spotify.com",
-            "Accept": "application/json",
-            "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Content-Type": "image/jpeg",
-            "client-token": client_token,
-            "Origin": "https://open.spotify.com",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "authorization": f"Bearer {token}",
-            "Referer": "https://open.spotify.com/",
-            "Connection": "keep-alive",
-            "TE": "trailers"
-        }
+                r1 = session.post(url='https://image-upload.spotify.com/v4/user-profile', headers=headers, data=avatar)
 
-        r1 = session.post(url='https://image-upload.spotify.com/v4/user-profile', headers=headers, data=avatar)
+                if r1.status_code == 200:
+                    upload_token = r1.json()['uploadToken']
 
-        if r1.status_code == 200:
-            upload_token = r1.json()['uploadToken']
+                    headers = {
+                        'Accept': 'application/json',
+                        'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        'app-platform': 'WebPlayer',
+                        'spotify-app-version': self.client_version,
+                        'client-token': client_token,
+                        'Origin': 'https://open.spotify.com',
+                        'Sec-Fetch-Dest': 'empty',
+                        'Sec-Fetch-Mode': 'cors',
+                        'Sec-Fetch-Site': 'same-site',
+                        'authorization': f'Bearer {token}',
+                        'Referer': 'https://open.spotify.com/',
+                        'Connection': 'keep-alive',
+                        'Content-Length': '0',
+                        'TE': 'trailers',
+                    }
 
-            headers = {
-                'Accept': 'application/json',
-                'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'app-platform': 'WebPlayer',
-                'spotify-app-version': self.client_version,
-                'client-token': client_token,
-                'Origin': 'https://open.spotify.com',
-                'Sec-Fetch-Dest': 'empty',
-                'Sec-Fetch-Mode': 'cors',
-                'Sec-Fetch-Site': 'same-site',
-                'authorization': f'Bearer {token}',
-                'Referer': 'https://open.spotify.com/',
-                'Connection': 'keep-alive',
-                'Content-Length': '0',
-                'TE': 'trailers',
-            }
-
-            r2 = session.post(url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}', headers=headers)
-            if r2.status_code == 200:
-                self.console.printhc('Successfully pfp changed.')
+                    r2 = session.post(url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}', headers=headers)
+                    if r2.status_code == 200:
+                        self.console.printhc('Successfully pfp changed.')
+                        break
+                    else:
+                        self.console.printe('Error changing pfp. Retrying...')
+            except Exception as e:
+                self.console.printe('Error changing pfp. Retrying...')
 
     def followPlaylist(self, session: httpx.Client, client_token: str, token: str):
-        headers = {
-            'Accept': 'application/json',
-            'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Content-Type': 'application/json;charset=UTF-8',
-            'app-platform': 'WebPlayer',
-            'spotify-app-version': self.client_version,
-            'client-token': client_token,
-            'Origin': 'https://open.spotify.com',
-            'Sec-Fetch-Dest': 'empty',
-            'Sec-Fetch-Mode': 'cors',
-            'Sec-Fetch-Site': 'same-site',
-            'authorization': f'Bearer {token}',
-            'Referer': 'https://open.spotify.com/',
-            'Connection': 'keep-alive',
-            'TE': 'trailers'
-        }
+        while True:
+            try:
+                headers = {
+                    'Accept': 'application/json',
+                    'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'Content-Type': 'application/json;charset=UTF-8',
+                    'app-platform': 'WebPlayer',
+                    'spotify-app-version': self.client_version,
+                    'client-token': client_token,
+                    'Origin': 'https://open.spotify.com',
+                    'Sec-Fetch-Dest': 'empty',
+                    'Sec-Fetch-Mode': 'cors',
+                    'Sec-Fetch-Site': 'same-site',
+                    'authorization': f'Bearer {token}',
+                    'Referer': 'https://open.spotify.com/',
+                    'Connection': 'keep-alive',
+                    'TE': 'trailers'
+                }
 
-        r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.playlist_id}/followers', headers=headers)
-        if r.status_code == 200:
-            self.console.printi('Successfully followed playlist.')
+                r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.playlist_id}/followers', headers=headers)
+                if r.status_code == 200:
+                    self.console.printi('Successfully followed playlist.')
+                    break
+                else:
+                    self.console.printe('Error following, retrying...')
+            except Exception as e:
+                self.console.printe('Error following, Retrying...')
 
     def createAccount(self):
         while True:
-            if self.use_proxy == 'y':
-                proxy = choice(self.proxies)
-                session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"})
-            else:
-                session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"})
-            username = self.faker.getUsername(self.create_username.lower())
-            mail = self.faker.getMail(16)
-            password = self.faker.getPassword(12)
-            birthday = self.faker.getBirthday()
+            try:
+                if self.use_proxy == 'y':
+                    proxy = choice(self.proxies)
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"})
+                else:
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"})
+                username = self.faker.getUsername(self.create_username.lower())
+                mail = self.faker.getMail(16)
+                password = self.faker.getPassword(12)
+                birthday = self.faker.getBirthday()
 
-            payload = {
-            	"account_details": {
-            		"birthdate": birthday,
-            		"consent_flags": {
-            			"eula_agreed": True,
-            			"send_email": True,
-            			"third_party_email": True
-            		},
-            		"display_name": username,
-            		"email_and_password_identifier": {
-            			"email": mail,
-            			"password": password
-            		},
-            		"gender": randint(1, 2)
-            	},
-            	"callback_uri": "https://www.spotify.com/signup/challenge?locale=us",
-            	"client_info": {
-            		"api_key": "a1e486e2729f46d6bb368d6b2bcda326",
-            		"app_version": "v2",
-            		"capabilities": [
-            			1
-            		],
-            		"installation_id": str(uuid4()),
-            		"platform": "www"
-            	},
-            	"tracking": {
-            		"creation_flow": "",
-            		"creation_point": "https://www.spotify.com/uk/",
-            		"referrer": ""
-            	}
-            }
+                payload = {
+                	"account_details": {
+                		"birthdate": birthday,
+                		"consent_flags": {
+                			"eula_agreed": True,
+                			"send_email": True,
+                			"third_party_email": True
+                		},
+                		"display_name": username,
+                		"email_and_password_identifier": {
+                			"email": mail,
+                			"password": password
+                		},
+                		"gender": randint(1, 2)
+                	},
+                	"callback_uri": "https://www.spotify.com/signup/challenge?locale=us",
+                	"client_info": {
+                		"api_key": "a1e486e2729f46d6bb368d6b2bcda326",
+                		"app_version": "v2",
+                		"capabilities": [
+                			1
+                		],
+                		"installation_id": str(uuid4()),
+                		"platform": "www"
+                	},
+                	"tracking": {
+                		"creation_flow": "",
+                		"creation_point": "https://www.spotify.com/uk/",
+                		"referrer": ""
+                	}
+                }
 
-            headers = {
-                "Host": "spclient.wg.spotify.com",
-                "Accept": "*/*",
-                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Referer": "https://www.spotify.com/",
-                "Content-Type": "application/json",
-                "Content-Length": str(len(json.dumps(payload))),
-                "Origin": "https://www.spotify.com",
-                "Connection": "keep-alive",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-site",
-                "TE": "trailers"
-            }
+                headers = {
+                    "Host": "spclient.wg.spotify.com",
+                    "Accept": "*/*",
+                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Referer": "https://www.spotify.com/",
+                    "Content-Type": "application/json",
+                    "Content-Length": str(len(json.dumps(payload))),
+                    "Origin": "https://www.spotify.com",
+                    "Connection": "keep-alive",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "TE": "trailers"
+                }
 
-            r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
+                r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload, timeout=15)
 
-            if r.status_code == 200:
-                self.console.printsc(f'Account has been created with the name {username}.')
-                self.created += 1
-                self.tools.setTitle(self.threads, len(self.proxies), self.created)
-                account_id = r.json()['success']['username']
-                login_token = r.json()['success']['login_token']
-                client_token = self.getClientToken(session)
-                token = self.getToken(session, login_token)
-                self.changeAvatar(session, client_token, token, account_id)
-                if self.follow_type == 'playlist' or self.follow_type == 'both':
-                    self.followPlaylist(session, client_token, token)
-                if self.follow_type == 'account' or self.follow_type == 'both':
-                    self.followAccount(session, client_token, token)
+                if r.status_code == 200:
+                    self.console.printsc(f'Account has been created with the name {username}.')
+                    self.created += 1
+                    self.tools.setTitle(self.threads, len(self.proxies), self.created)
+                    account_id = r.json()['success']['username']
+                    login_token = r.json()['success']['login_token']
+                    client_token = self.getClientToken(session)
+                    token = self.getToken(session, login_token)
+                    self.changeAvatar(session, client_token, token, account_id)
+                    if self.follow_type == 'playlist' or self.follow_type == 'both':
+                        self.followPlaylist(session, client_token, token)
+                    if self.follow_type == 'account' or self.follow_type == 'both':
+                        self.followAccount(session, client_token, token)
 
-                if self.save_method == 'text' or self.save_method == 'both':
-                    with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
-                        f.write(f"{username}:{mail}:{password}\n")
-                    with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
-                        f.write(f"{token}\n")
+                    if self.save_method == 'text' or self.save_method == 'both':
+                        with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
+                            f.write(f"{username}:{mail}:{password}\n")
+                        with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
+                            f.write(f"{token}\n")
 
-                if self.save_method == 'sqlite' or self.save_method == 'both':
-                    self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
-                    self.connection.commit()
+                    if self.save_method == 'sqlite' or self.save_method == 'both':
+                        self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
+                        self.connection.commit()
 
-            else:
-                self.console.printe('Account not created.')
-                print(r.text)
+                elif 'VPN' in r.text:
+                    self.console.printe(f'Account not created. Bad proxies: {proxy}')
+                    # self.proxies.remove(proxy)
+                else:
+                    self.console.printe('Account not created.')
+                    print(r.text)
+            except Exception as e:
+                self.console.printe(f'{str(e).capitalize()}. Retrying...')
+                continue
 
     def start(self):
-        while threading.active_count() < self.threads+1:
-            threading.Thread(target=self.createAccount()).start()
-            sleep(0.5)
+        while threading.active_count() < self.threads:
+            threading.Thread(target=self.createAccount).start()
+
 
 
 if __name__ == '__main__':
