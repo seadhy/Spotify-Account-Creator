@@ -1,0 +1,10 @@
+{
+    "threads": 3,
+    "create_username": "y or n",
+    "use_proxy": "y or n",
+    "user_id": "account id",
+    "playlist_id": "playlist id",
+    "follow_type": "account or playlist or both",
+    "save_method": "account or playlist or both"
+
+}
