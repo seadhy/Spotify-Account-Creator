@@ -351,7 +351,7 @@ class Gen:
                 continue
 
     def start(self):
-        while threading.active_count() < self.threads:
+        while threading.active_count() < self.threads+1:
             threading.Thread(target=self.createAccount).start()
 
 
