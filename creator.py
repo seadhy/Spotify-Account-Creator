@@ -145,29 +145,36 @@ class Gen:
                 return r2.json()['accessToken']
 
     def followAccount(self, session: httpx.Client, client_token: str, token: str):
-        headers = {
-            "Host": "api.spotify.com",
-            "Accept": "application/json",
-            "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "app-platform": "WebPlayer",
-            "spotify-app-version": self.client_version,
-            "client-token": client_token,
-            "Origin": "https://open.spotify.com",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "authorization": f"Bearer {token}",
-            "Referer": "https://open.spotify.com/",
-            "Connection": "keep-alive",
-            "Content-Length": "0",
-            "TE": "trailers"
-        }
+        while True:
+            try:
+                headers = {
+                    "Host": "api.spotify.com",
+                    "Accept": "application/json",
+                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "app-platform": "WebPlayer",
+                    "spotify-app-version": self.client_version,
+                    "client-token": client_token,
+                    "Origin": "https://open.spotify.com",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "authorization": f"Bearer {token}",
+                    "Referer": "https://open.spotify.com/",
+                    "Connection": "keep-alive",
+                    "Content-Length": "0",
+                    "TE": "trailers"
+                }
 
-        r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={self.user_id}', headers=headers)
+                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={self.user_id}', headers=headers)
 
-        if r.status_code == 204:
-            self.console.printi('Followed to account.')
+                if r.status_code == 204:
+                    self.console.printi('Followed to account.')
+                    break
+                else:
+                    self.console.printe('Error following account. Retrying...')
+            except Exception:
+                self.console.printe('Error following account. Retrying...')
 
     def changeAvatar(self, session: httpx.Client, client_token: str, token: str, account_id: str):
         while True:
@@ -220,7 +227,7 @@ class Gen:
                         break
                     else:
                         self.console.printe('Error changing pfp. Retrying...')
-            except Exception as e:
+            except Exception:
                 self.console.printe('Error changing pfp. Retrying...')
 
     def followPlaylist(self, session: httpx.Client, client_token: str, token: str):
@@ -250,7 +257,7 @@ class Gen:
                     break
                 else:
                     self.console.printe('Error following, retrying...')
-            except Exception as e:
+            except Exception:
                 self.console.printe('Error following, Retrying...')
 
     def createAccount(self):
@@ -351,7 +358,7 @@ class Gen:
                 continue
 
     def start(self):
-        while threading.active_count() < self.threads+1:
+        while threading.active_count() < self.threads:
             threading.Thread(target=self.createAccount).start()
 
 
