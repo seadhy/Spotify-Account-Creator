@@ -34,5 +34,5 @@ class Faker:
         if int(month) < 10: month = "0" + month
         if int(day) < 10: day = "0" + day
         
-        birthday = "-".join([str(randint(1900, 2004)), month, day])
+        birthday = "-".join([str(randint(1903, 2004)), month, day])
         return birthday
