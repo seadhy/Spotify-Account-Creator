@@ -1,5 +1,5 @@
 # Spotify Account Creator + Follower 
- Guilded Account Creator + Follow account or playlist with fully httpx request based.
+ Guilded Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Guilded-Account-Creator/issues/new).
 
 ## 💻 Preview
 
@@ -10,7 +10,7 @@
 ## 👾 Features
 - Fully request based creator
 - Playlist or profile follow
-- Auto change avatars
+- Auto change avatars (pfps)
 - Save accounts SQLite database or text file
 - HTTP&HTTPS proxy support
 - Multi-Threading support
