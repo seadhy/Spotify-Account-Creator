@@ -256,9 +256,9 @@ class Gen:
                     self.console.printi('Successfully followed playlist.')
                     break
                 else:
-                    self.console.printe('Error following, retrying...')
+                    self.console.printe('Error following. Retrying...')
             except Exception:
-                self.console.printe('Error following, Retrying...')
+                self.console.printe('Error following. Retrying...')
 
     def createAccount(self):
         while True:
