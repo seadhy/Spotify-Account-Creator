@@ -25,7 +25,7 @@ class Gen:
         self.save_method = self.config_file['save_method'].lower()
         self.use_proxy = self.config_file['use_proxy'].lower()
 
-        self.client_version = '1.1.99.763.gf752157a'  # you can change value to new version
+        self.client_version = '1.2.0.420.gd37340b3'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt','r',encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.use_proxy == 'y':
