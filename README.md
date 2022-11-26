@@ -1,5 +1,5 @@
 # Spotify Account Creator + Follower 
- Guilded Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Spotify-Account-Creator/issues/new).
+ Spotify Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Spotify-Account-Creator/issues/new).
 
 ## 💻 Preview
 
