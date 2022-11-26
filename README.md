@@ -30,6 +30,11 @@
 
 4. Run `run.bat`
 
+  ### Or
+  
+ 1. Click and watch the [video](https://streamable.com/kazajm). 
+ 
+ 2. And do the same as in the video.
 
 ## ⚠️ DISCLAIMER
 This github repo is for EDUCATIONAL PURPOSES ONLY. I am NOT under any responsibility if a problem occurs.
