@@ -15,11 +15,11 @@
 - HTTP&HTTPS proxy support
 - Multi-Threading support
 
-## 🌟 Stars
+## 🌟 Stars to Unlock
 
-- 25 Stars = Follow artist account
+- 25 Stars | Follow artist account
 
-- 50 Stars = Auto mail verify 
+- 50 Stars | Auto mail verify 
 
 ## ✍️ Usage
 1. Run `install.bat`
