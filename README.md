@@ -1,5 +1,5 @@
 # Spotify Account Creator + Follower 
- Guilded Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Spotify-Account-Creator/issues/new).
+ Spotify Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Spotify-Account-Creator/issues/new).
 
 ## 💻 Preview
 
@@ -9,17 +9,19 @@
 
 ## 👾 Features
 - Fully request based creator
-- Playlist or profile follow
+- Auto Playlist or Profile or Artist follow
 - Auto change avatars (pfps)
 - Save accounts SQLite database or text file
 - HTTP&HTTPS proxy support
 - Multi-Threading support
 
-## 🌟 Stars
+## 🌟 Stars to Unlock
 
-- 25 Stars = Follow artist account
+- ✅ 25 Stars | Follow artist account
 
-- 50 Stars = Auto mail verify 
+- ❌ 50 Stars | Add more optional choices
+
+- ❌ 100 Stars | Auto mail verify 
 
 ## ✍️ Usage
 1. Run `install.bat`
@@ -30,6 +32,11 @@
 
 4. Run `run.bat`
 
+  ### Or
+  
+ 1. Click and watch the [video](https://streamable.com/kazajm). 
+ 
+ 2. And do the same as in the video.
 
 ## ⚠️ DISCLAIMER
 This github repo is for EDUCATIONAL PURPOSES ONLY. I am NOT under any responsibility if a problem occurs.

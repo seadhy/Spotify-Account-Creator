@@ -17,24 +17,23 @@ class Gen:
         self.console = Console()
 
         self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
-        self.user_id = self.config_file['user_id']
-        self.threads = self.config_file['threads']
-        self.playlist_id = self.config_file['playlist_id']
-        self.create_username = self.config_file['create_username'].lower()
-        self.follow_type = self.config_file['follow_type'].lower()
-        self.save_method = self.config_file['save_method'].lower()
-        self.use_proxy = self.config_file['use_proxy'].lower()
+        self.settings = self.config_file['settings']
+        self.follow_ids = self.config_file['follow_ids']
+        self.follow_types = self.config_file['follow_types']
+        self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.0.420.gd37340b3'  # you can change value to new version
+        self.client_version = '1.2.0.3268.g1037759b'  # you can change value to new version
 
-        self.proxies = open('data/proxies.txt','r',encoding='utf-8').read().splitlines()
-        if len(self.proxies) == 0 and self.use_proxy == 'y':
-            self.use_proxy = 'n'
+        self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
+        if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
+            self.settings['Use_Proxy'] = 'n'
             self.console.printe('Continuing without using proxy because there is no proxy in data/proxies.txt folder.')
+            sleep(1)
 
-        if self.threads < 1:
-            self.threads = 1
+        if self.settings['Threads'] < 1:
+            self.settings['Threads'] = 1
             self.console.printe('It continues as thread 1 because the number of threads cannot be less than 1!')
+            sleep(1)
 
         self.connection = sqlite3.connect('saved/database.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
@@ -42,7 +41,7 @@ class Gen:
 
         self.created = 0
 
-        self.tools.setTitle(self.threads, len(self.proxies), self.created)
+        self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
 
     def getClientToken(self, session: httpx.Client) -> str:
 
@@ -166,7 +165,7 @@ class Gen:
                     "TE": "trailers"
                 }
 
-                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={self.user_id}', headers=headers)
+                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={self.follow_ids["User_ID"]}', headers=headers)
 
                 if r.status_code == 204:
                     self.console.printi('Followed to account.')
@@ -251,24 +250,57 @@ class Gen:
                     'TE': 'trailers'
                 }
 
-                r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.playlist_id}/followers', headers=headers)
+                r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.follow_ids["Playlist_ID"]}/followers', headers=headers)
                 if r.status_code == 200:
                     self.console.printi('Successfully followed playlist.')
                     break
                 else:
-                    self.console.printe('Error following. Retrying...')
+                    self.console.printe('Error following, retrying...')
             except Exception:
-                self.console.printe('Error following. Retrying...')
+                self.console.printe('Error following, Retrying...')
+
+    def followArtist(self, session: httpx.Client, client_token: str, token: str):
+        while True:
+            try:
+                headers = {
+                    "Host": "api.spotify.com",
+                    "Accept": "application/json",
+                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "app-platform": "WebPlayer",
+                    "spotify-app-version": self.client_version,
+                    "client-token": client_token,
+                    "Origin": "https://open.spotify.com",
+                    "Sec-Fetch-Dest": "empty",
+                    "Sec-Fetch-Mode": "cors",
+                    "Sec-Fetch-Site": "same-site",
+                    "authorization": f"Bearer {token}",
+                    "Referer": "https://open.spotify.com/",
+                    "Connection": "keep-alive",
+                    "Content-Length": "0",
+                    "TE": "trailers"
+                }
+
+                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={self.follow_ids["Artist_ID"]}', headers=headers)
+
+                if r.status_code == 204:
+                    self.console.printi('Followed to artist account.')
+                    break
+                else:
+                    self.console.printe('Error following artist account. Retrying...')
+                    print(r.text)
+            except Exception:
+                self.console.printe('Error following artist account. Retrying...')
 
     def createAccount(self):
         while True:
             try:
-                if self.use_proxy == 'y':
+                if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
                     session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"})
                 else:
                     session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"})
-                username = self.faker.getUsername(self.create_username.lower())
+                username = self.faker.getUsername(self.settings['Create_Username'])
                 mail = self.faker.getMail(16)
                 password = self.faker.getPassword(12)
                 birthday = self.faker.getBirthday()
@@ -326,24 +358,29 @@ class Gen:
                 if r.status_code == 200:
                     self.console.printsc(f'Account has been created with the name {username}.')
                     self.created += 1
-                    self.tools.setTitle(self.threads, len(self.proxies), self.created)
+                    self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
                     client_token = self.getClientToken(session)
                     token = self.getToken(session, login_token)
                     self.changeAvatar(session, client_token, token, account_id)
-                    if self.follow_type == 'playlist' or self.follow_type == 'both':
-                        self.followPlaylist(session, client_token, token)
-                    if self.follow_type == 'account' or self.follow_type == 'both':
+
+                    if self.follow_types['Profile'] == 'y':
                         self.followAccount(session, client_token, token)
 
-                    if self.save_method == 'text' or self.save_method == 'both':
+                    if self.follow_types['Playlist'] == 'y':
+                        self.followPlaylist(session, client_token, token)
+
+                    if self.follow_types['Artist'] == 'y':
+                        self.followArtist(session, client_token, token)
+
+                    if self.save_methods['Text_File'] == 'y':
                         with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
                             f.write(f"{username}:{mail}:{password}\n")
                         with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
                             f.write(f"{token}\n")
 
-                    if self.save_method == 'sqlite' or self.save_method == 'both':
+                    if self.save_methods['SQLite'] == 'y':
                         self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
                         self.connection.commit()
 
@@ -352,13 +389,14 @@ class Gen:
                     # self.proxies.remove(proxy)
                 else:
                     self.console.printe('Account not created.')
+                    print(payload)
                     print(r.text)
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
 
     def start(self):
-        while threading.active_count() < self.threads + 1:
+        while threading.active_count() < self.settings['Threads'] + 1:
             threading.Thread(target=self.createAccount).start()
 
 

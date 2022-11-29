@@ -1,10 +1,24 @@
 {
-    "threads": 3,
-    "create_username": "y or n",
-    "use_proxy": "y or n",
-    "user_id": "account id",
-    "playlist_id": "playlist id",
-    "follow_type": "account or playlist or both",
-    "save_method": "account or playlist or both"
+    "settings": {
+        "Threads": 3,
+        "Create_Username": "y or n",
+        "Use_Proxy": "y or n"
+    },
 
+    "follow_ids": {
+        "User_ID": "account id",
+        "Playlist_ID": "playlist id",
+        "Artist_ID": "artist id"
+    },
+
+    "follow_types": {
+        "Profile": "y or n",
+        "Playlist": "y or n",
+        "Artist": "y or n"
+    },
+
+    "save_methods": {
+        "SQLite": "y or n",
+        "Text_File": "y or n"
+    }
 }
