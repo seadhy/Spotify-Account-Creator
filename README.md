@@ -17,11 +17,11 @@
 
 ## 🌟 Stars to Unlock
 
-- 25 Stars | Follow artist account
+- ✅ 25 Stars | Follow artist account
 
-- 50 Stars | Add more optional choices
+- ❌ 50 Stars | Add more optional choices
 
-- 100 Stars | Auto mail verify 
+- ❌ 100 Stars | Auto mail verify 
 
 ## ✍️ Usage
 1. Run `install.bat`
