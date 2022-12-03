@@ -252,12 +252,12 @@ class Gen:
 
                 r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.follow_ids["Playlist_ID"]}/followers', headers=headers)
                 if r.status_code == 200:
-                    self.console.printi('Successfully followed playlist.')
+                    self.console.printi('Playlist followed.')
                     break
                 else:
-                    self.console.printe('Error following, retrying...')
+                    self.console.printe('Error following playlist. Retrying...')
             except Exception:
-                self.console.printe('Error following, Retrying...')
+                self.console.printe('Error following playlist. Retrying...')
 
     def followArtist(self, session: httpx.Client, client_token: str, token: str):
         while True:
@@ -387,9 +387,10 @@ class Gen:
                 elif 'VPN' in r.text:
                     self.console.printe(f'Account not created. Bad proxies: {proxy}')
                     # self.proxies.remove(proxy)
+                elif r.status_code == 403:
+                    self.console.printe(f'Account not created. Rate Limited.')
                 else:
                     self.console.printe('Account not created.')
-                    print(payload)
                     print(r.text)
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')

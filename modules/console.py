@@ -51,7 +51,7 @@ class Tools:
     def setTitle(threads: int, proxies: int, created: int):
 
         windll.kernel32.SetConsoleTitleW(
-            f"Seasmash Guilded Creator  |  Threads: {threads}  |  Loaded Proxies: {proxies}  |  Created: {created}  |  Made by github.com/seadhy")
+            f"Seasmash Spotify Creator  |  Threads: {threads}  |  Loaded Proxies: {proxies}  |  Created: {created}  |  Made by github.com/seadhy")
 
     @staticmethod
     def printLogo():
