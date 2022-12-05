@@ -22,7 +22,7 @@ class Gen:
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.0.3268.g1037759b'  # you can change value to new version
+        self.client_version = '1.2.1.156.g948cb3fe'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
