@@ -2,13 +2,14 @@
     "settings": {
         "Threads": 3,
         "Create_Username": "y or n",
-        "Use_Proxy": "y or n"
+        "Use_Proxy": "y or n",
+        "Change_Avatar": "y or n"
     },
 
     "follow_ids": {
-        "User_ID": "account id",
-        "Playlist_ID": "playlist id",
-        "Artist_ID": "artist id"
+        "Account_IDs": ["account id1", "account id2", "account id 3 (u can put as many as you want)"],
+        "Playlist_IDs": ["playlist id1", "playlist id2 (u can put as many as you want)"],
+        "Artist_IDs": ["artist id1", "artist id (u can put as many as you want)"]
     },
 
     "follow_types": {

@@ -145,35 +145,37 @@ class Gen:
 
     def followAccount(self, session: httpx.Client, client_token: str, token: str):
         while True:
-            try:
-                headers = {
-                    "Host": "api.spotify.com",
-                    "Accept": "application/json",
-                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "app-platform": "WebPlayer",
-                    "spotify-app-version": self.client_version,
-                    "client-token": client_token,
-                    "Origin": "https://open.spotify.com",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-site",
-                    "authorization": f"Bearer {token}",
-                    "Referer": "https://open.spotify.com/",
-                    "Connection": "keep-alive",
-                    "Content-Length": "0",
-                    "TE": "trailers"
-                }
+            for account_id in self.follow_ids["Account_IDs"]:
+                try:
+                    headers = {
+                        "Host": "api.spotify.com",
+                        "Accept": "application/json",
+                        "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                        "Accept-Encoding": "gzip, deflate, br",
+                        "app-platform": "WebPlayer",
+                        "spotify-app-version": self.client_version,
+                        "client-token": client_token,
+                        "Origin": "https://open.spotify.com",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Site": "same-site",
+                        "authorization": f"Bearer {token}",
+                        "Referer": "https://open.spotify.com/",
+                        "Connection": "keep-alive",
+                        "Content-Length": "0",
+                        "TE": "trailers"
+                    }
 
-                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={self.follow_ids["User_ID"]}', headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}', headers=headers)
 
-                if r.status_code == 204:
-                    self.console.printi('Followed to account.')
-                    break
-                else:
+                    if r.status_code == 204:
+                        self.console.printi(f'Successfully followed to account: [{account_id}]')
+                    else:
+                        self.console.printe('Error following account. Retrying...')
+                except Exception:
                     self.console.printe('Error following account. Retrying...')
-            except Exception:
-                self.console.printe('Error following account. Retrying...')
+                    continue
+            break
 
     def changeAvatar(self, session: httpx.Client, client_token: str, token: str, account_id: str):
         while True:
@@ -232,65 +234,69 @@ class Gen:
     def followPlaylist(self, session: httpx.Client, client_token: str, token: str):
         while True:
             try:
-                headers = {
-                    'Accept': 'application/json',
-                    'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'Content-Type': 'application/json;charset=UTF-8',
-                    'app-platform': 'WebPlayer',
-                    'spotify-app-version': self.client_version,
-                    'client-token': client_token,
-                    'Origin': 'https://open.spotify.com',
-                    'Sec-Fetch-Dest': 'empty',
-                    'Sec-Fetch-Mode': 'cors',
-                    'Sec-Fetch-Site': 'same-site',
-                    'authorization': f'Bearer {token}',
-                    'Referer': 'https://open.spotify.com/',
-                    'Connection': 'keep-alive',
-                    'TE': 'trailers'
-                }
+                for playlist_id in self.follow_ids["Playlist_IDs"]:
+                    headers = {
+                        'Accept': 'application/json',
+                        'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                        'Accept-Encoding': 'gzip, deflate, br',
+                        'Content-Type': 'application/json;charset=UTF-8',
+                        'app-platform': 'WebPlayer',
+                        'spotify-app-version': self.client_version,
+                        'client-token': client_token,
+                        'Origin': 'https://open.spotify.com',
+                        'Sec-Fetch-Dest': 'empty',
+                        'Sec-Fetch-Mode': 'cors',
+                        'Sec-Fetch-Site': 'same-site',
+                        'authorization': f'Bearer {token}',
+                        'Referer': 'https://open.spotify.com/',
+                        'Connection': 'keep-alive',
+                        'TE': 'trailers'
+                    }
 
-                r = session.put(url=f'https://api.spotify.com/v1/playlists/{self.follow_ids["Playlist_ID"]}/followers', headers=headers)
-                if r.status_code == 200:
-                    self.console.printi('Playlist followed.')
-                    break
-                else:
-                    self.console.printe('Error following playlist. Retrying...')
+                    r = session.put(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/followers', headers=headers)
+                    if r.status_code == 200:
+                        self.console.printi(f'Successfully followed to playlist: [{playlist_id}]')
+                    else:
+                        self.console.printe('Error following, retrying...')
             except Exception:
-                self.console.printe('Error following playlist. Retrying...')
-
+                self.console.printe('Error following, Retrying...')
+                continue
+            break
     def followArtist(self, session: httpx.Client, client_token: str, token: str):
         while True:
             try:
-                headers = {
-                    "Host": "api.spotify.com",
-                    "Accept": "application/json",
-                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "app-platform": "WebPlayer",
-                    "spotify-app-version": self.client_version,
-                    "client-token": client_token,
-                    "Origin": "https://open.spotify.com",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-site",
-                    "authorization": f"Bearer {token}",
-                    "Referer": "https://open.spotify.com/",
-                    "Connection": "keep-alive",
-                    "Content-Length": "0",
-                    "TE": "trailers"
-                }
+                for artist_id in self.follow_ids["Artist_IDs"]:
+                    headers = {
+                        "Host": "api.spotify.com",
+                        "Accept": "application/json",
+                        "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                        "Accept-Encoding": "gzip, deflate, br",
+                        "app-platform": "WebPlayer",
+                        "spotify-app-version": self.client_version,
+                        "client-token": client_token,
+                        "Origin": "https://open.spotify.com",
+                        "Sec-Fetch-Dest": "empty",
+                        "Sec-Fetch-Mode": "cors",
+                        "Sec-Fetch-Site": "same-site",
+                        "authorization": f"Bearer {token}",
+                        "Referer": "https://open.spotify.com/",
+                        "Connection": "keep-alive",
+                        "Content-Length": "0",
+                        "TE": "trailers"
+                    }
 
-                r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={self.follow_ids["Artist_ID"]}', headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={artist_id}', headers=headers)
 
-                if r.status_code == 204:
-                    self.console.printi('Followed to artist account.')
-                    break
-                else:
-                    self.console.printe('Error following artist account. Retrying...')
-                    print(r.text)
+                    if r.status_code == 204:
+                        self.console.printi(f'Successfully followed to artist account: [{artist_id}]')
+                    else:
+                        self.console.printe('Error following artist account. Retrying...')
+                        print(r.text)
             except Exception:
                 self.console.printe('Error following artist account. Retrying...')
+                continue
+
+            break
 
     def createAccount(self):
         while True:
@@ -363,7 +369,10 @@ class Gen:
                     login_token = r.json()['success']['login_token']
                     client_token = self.getClientToken(session)
                     token = self.getToken(session, login_token)
-                    self.changeAvatar(session, client_token, token, account_id)
+
+                    if self.settings['Change_Avatar'] == 'y':
+                        self.changeAvatar(session, client_token, token, account_id)
+
 
                     if self.follow_types['Profile'] == 'y':
                         self.followAccount(session, client_token, token)
@@ -387,11 +396,10 @@ class Gen:
                 elif 'VPN' in r.text:
                     self.console.printe(f'Account not created. Bad proxies: {proxy}')
                     # self.proxies.remove(proxy)
-                elif r.status_code == 403:
-                    self.console.printe(f'Account not created. Rate Limited.')
                 else:
                     self.console.printe('Account not created.')
-                    print(r.text)
+                    # print(payload)
+                    # print(r.text)
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue

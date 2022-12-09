@@ -3,7 +3,7 @@
 
 ## 💻 Preview
 
-![Console_Image](https://user-images.githubusercontent.com/82868382/202025657-b589bdf5-01d4-49b7-81f9-cc8a8b785518.png)
+![Console_Image](https://user-images.githubusercontent.com/82868382/206721924-4ab84558-dabb-48a2-a205-e2e70cf0474b.png)
 
 ![Followers_Image](https://user-images.githubusercontent.com/82868382/202025646-c3118ac8-1126-4045-8493-bcb0150f0a74.png)
 
@@ -19,7 +19,7 @@
 
 - ✅ 25 Stars | Follow artist account
 
-- ❌ 50 Stars | Add more optional choices
+- ✅ 50 Stars | Add more optional choices
 
 - ❌ 100 Stars | Auto mail verify 
 
