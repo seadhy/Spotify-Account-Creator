@@ -34,7 +34,7 @@
 
   ### Or
   
- 1. Click and watch the [video](https://streamable.com/kazajm). 
+ 1. Click and watch the [video](https://streamable.com/v4ooti). 
  
  2. And do the same as in the video.
 
