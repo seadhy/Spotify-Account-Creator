@@ -3,7 +3,6 @@ from threading import Lock
 from datetime import datetime
 from ctypes import windll
 from pystyle import Center,Colors,Colorate
-from os import system
 
 
 lock = Lock()
@@ -42,10 +41,6 @@ class Console:
 
 
 class Tools:
-
-    @staticmethod
-    def clear():
-        system('cls')
 
     @staticmethod
     def setTitle(threads: int, proxies: int, created: int):

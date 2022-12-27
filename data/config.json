@@ -4,6 +4,7 @@
         "Create_Username": "y or n",
         "Use_Proxy": "y or n",
         "Change_Avatar": "y or n"
+		"Debug_Mode": "if you are not a developer, do not touch this value!! (if you're going to change you can just do 'y')"
     },
 
     "follow_ids": {

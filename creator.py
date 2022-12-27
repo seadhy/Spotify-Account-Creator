@@ -22,7 +22,7 @@ class Gen:
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.1.156.g948cb3fe'  # you can change value to new version
+        self.client_version = '1.2.2.109.g7ec2c843'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -43,95 +43,65 @@ class Gen:
 
         self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
 
+    @staticmethod
+    def debugMode(*args):
+        threading.Lock.acquire()
+        print('----------DEBUG------------')
+        for _ in args: print(_)
+        print('----------DEBUG------------')
+        threading.Lock.release()
+
     def getClientToken(self, session: httpx.Client) -> str:
+        while True:
+            payload = {
+            	"client_data": {
+            		"client_id": "d8a5ed958d274c2e8ee717e6a4b0971d",
+            		"client_version": self.client_version,
+            		"js_sdk_data": {
+            			"device_brand": "unknown",
+            			"device_model": "desktop",
+            			"os": "Windows",
+            			"os_version": "NT 10.0"
+            		}
+            	}
+            }
 
-        payload = {
-        	"client_data": {
-        		"client_id": "d8a5ed958d274c2e8ee717e6a4b0971d",
-        		"client_version": self.client_version,
-        		"js_sdk_data": {
-        			"device_brand": "unknown",
-        			"device_model": "desktop",
-        			"os": "Windows",
-        			"os_version": "NT 10.0"
-        		}
-        	}
-        }
-
-        headers = {
-            "Host": "clienttoken.spotify.com",
-            "Accept": "application/json",
-            "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Content-Type": "application/json",
-            "Content-Length": str(len(json.dumps(payload))),
-            "Origin": "https://open.spotify.com",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-site",
-            "Referer": "https://open.spotify.com/",
-            "Connection": "keep-alive",
-            "TE": "trailers"
-        }
+            headers = {
+                "Host": "clienttoken.spotify.com",
+                "Accept": "application/json",
+                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Content-Type": "application/json",
+                "Content-Length": str(len(json.dumps(payload))),
+                "Origin": "https://open.spotify.com",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-site",
+                "Referer": "https://open.spotify.com/",
+                "Connection": "keep-alive",
+                "TE": "trailers"
+            }
 
 
-        r = session.post(url='https://clienttoken.spotify.com/v1/clienttoken', headers=headers, json=payload)
-        if r.status_code == 200:
-            return r.json()['granted_token']['token']
+            r = session.post(url='https://clienttoken.spotify.com/v1/clienttoken', headers=headers, json=payload)
+            if r.status_code == 200:
+                return r.json()['granted_token']['token']
+            else:
+                self.console.printe('Failed to get Client Token. Retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(r.text, r.status_code)
+
 
     def getCsrfToken(self, session: httpx.Client) -> str:
-        headers = {
-            "Host": "www.spotify.com",
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "TE": "trailers"
-        }
-
-        r = session.get(url='https://www.spotify.com/us/signup', headers=headers)
-
-        if r.status_code == 200:
-            return r.text.split('csrfToken')[1].split('"')[2]
-
-    def getToken(self, session: httpx.Client, login_token: str) -> str:
-        headers = {
-            "Host": "www.spotify.com",
-            "Accept": "*/*",
-            "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Referer": "https://www.spotify.com/us/signup?forward_url=https%3A%2F%2Fopen.spotify.com%2F",
-            "Content-Type": "application/x-www-form-urlencoded",
-            "X-CSRF-Token": self.getCsrfToken(session),
-            "X-KL-Ajax-Request": "Ajax_Request",
-            "Content-Length": "28",
-            "Origin": "https://www.spotify.com",
-            "Connection": "keep-alive",
-            "Sec-Fetch-Dest": "empty",
-            "Sec-Fetch-Mode": "cors",
-            "Sec-Fetch-Site": "same-origin",
-            "TE": "trailers"
-        }
-
-        r1 = session.post(url='https://www.spotify.com/api/signup/authenticate', headers=headers, data=f'splot={login_token}')
-
-        if r1.status_code == 200:
+        while True:
             headers = {
-                "Accept": "application/json",
-                "Accept-Encoding": "gzip, deflate, br",
+                "Host": "www.spotify.com",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                 "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Accept-Encoding": "gzip, deflate, br",
                 "Connection": "keep-alive",
                 "Upgrade-Insecure-Requests": "1",
-                "spotify-app-version": self.client_version,
-                "app-platform": "WebPlayer",
-                "Host": "open.spotify.com",
-                "Referer": "https://open.spotify.com/",
                 "Sec-Fetch-Dest": "document",
                 "Sec-Fetch-Mode": "navigate",
                 "Sec-Fetch-Site": "none",
@@ -139,9 +109,66 @@ class Gen:
                 "TE": "trailers"
             }
 
-            r2 = session.get(url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player', headers=headers)
-            if r2.status_code == 200:
-                return r2.json()['accessToken']
+            r = session.get(url='https://www.spotify.com/us/signup', headers=headers)
+
+            if r.status_code == 200:
+                return r.text.split('csrfToken')[1].split('"')[2]
+            else:
+                self.console.printe('Failed to get CSRF-Token. Retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(r.text, r.status_code)
+
+    def getToken(self, session: httpx.Client, login_token: str) -> str:
+        while True:
+            headers = {
+                "Host": "www.spotify.com",
+                "Accept": "*/*",
+                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Referer": "https://www.spotify.com/us/signup?forward_url=https%3A%2F%2Fopen.spotify.com%2F",
+                "Content-Type": "application/x-www-form-urlencoded",
+                "X-CSRF-Token": self.getCsrfToken(session),
+                "X-KL-Ajax-Request": "Ajax_Request",
+                "Content-Length": "28",
+                "Origin": "https://www.spotify.com",
+                "Connection": "keep-alive",
+                "Sec-Fetch-Dest": "empty",
+                "Sec-Fetch-Mode": "cors",
+                "Sec-Fetch-Site": "same-origin",
+                "TE": "trailers"
+            }
+
+            r1 = session.post(url='https://www.spotify.com/api/signup/authenticate', headers=headers, data=f'splot={login_token}')
+
+            if r1.status_code == 200:
+                headers = {
+                    "Accept": "application/json",
+                    "Accept-Encoding": "gzip, deflate, br",
+                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
+                    "Connection": "keep-alive",
+                    "Upgrade-Insecure-Requests": "1",
+                    "spotify-app-version": self.client_version,
+                    "app-platform": "WebPlayer",
+                    "Host": "open.spotify.com",
+                    "Referer": "https://open.spotify.com/",
+                    "Sec-Fetch-Dest": "document",
+                    "Sec-Fetch-Mode": "navigate",
+                    "Sec-Fetch-Site": "none",
+                    "Sec-Fetch-User": "?1",
+                    "TE": "trailers"
+                }
+
+                r2 = session.get(url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player', headers=headers)
+                if r2.status_code == 200:
+                    return r2.json()['accessToken']
+                else:
+                    self.console.printe('Failed to get Access Token. Retrying...')
+                    if self.settings['Debug_Mode'] == 'y':
+                        self.debugMode(r2.text, r2.status_code)
+            else:
+                self.console.printe('Failed to authenticating account. Retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(r1.text, r1.status_code)
 
     def followAccount(self, session: httpx.Client, client_token: str, token: str):
         while True:
@@ -172,6 +199,8 @@ class Gen:
                         self.console.printi(f'Successfully followed to account: [{account_id}]')
                     else:
                         self.console.printe('Error following account. Retrying...')
+                        if self.settings['Debug_Mode'] == 'y':
+                            self.debugMode(r.text, r.status_code)
                 except Exception:
                     self.console.printe('Error following account. Retrying...')
                     continue
@@ -228,6 +257,12 @@ class Gen:
                         break
                     else:
                         self.console.printe('Error changing pfp. Retrying...')
+                        if self.settings['Debug_Mode'] == 'y':
+                            self.debugMode(r2.text, r2.status_code)
+                else:
+                    self.console.printe('Error uploading pfp. Retrying...')
+                    if self.settings['Debug_Mode'] == 'y':
+                        self.debugMode(r1.text, r1.status_code)
             except Exception:
                 self.console.printe('Error changing pfp. Retrying...')
 
@@ -258,6 +293,8 @@ class Gen:
                         self.console.printi(f'Successfully followed to playlist: [{playlist_id}]')
                     else:
                         self.console.printe('Error following, retrying...')
+                        if self.settings['Debug_Mode'] == 'y':
+                            self.debugMode(r.text, r.status_code)
             except Exception:
                 self.console.printe('Error following, Retrying...')
                 continue
@@ -291,7 +328,8 @@ class Gen:
                         self.console.printi(f'Successfully followed to artist account: [{artist_id}]')
                     else:
                         self.console.printe('Error following artist account. Retrying...')
-                        print(r.text)
+                        if self.settings['Debug_Mode'] == 'y':
+                            self.debugMode(r.text, r.status_code)
             except Exception:
                 self.console.printe('Error following artist account. Retrying...')
                 continue
@@ -398,8 +436,8 @@ class Gen:
                     # self.proxies.remove(proxy)
                 else:
                     self.console.printe('Account not created.')
-                    # print(payload)
-                    # print(r.text)
+                    if self.settings['Debug_Mode'] == 'y':
+                        self.debugMode(r.text, r.status_code)
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
@@ -407,7 +445,6 @@ class Gen:
     def start(self):
         while threading.active_count() < self.settings['Threads'] + 1:
             threading.Thread(target=self.createAccount).start()
-
 
 
 if __name__ == '__main__':
