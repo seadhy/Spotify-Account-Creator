@@ -1,12 +1,15 @@
-import httpx, json, os, sqlite3, threading
+import httpx, json, sqlite3, threading
 from random import choice, randint
 from time import sleep
+from subprocess import call
 from uuid import uuid4
+from cursor import hide
 from modules.console import Console,Tools
 from modules.faker import Faker
 
-os.system('cls')
-os.system('mode 200, 40')
+hide()
+call('cls', shell=True)
+call('mode 200, 40', shell=True)
 
 
 class Gen:
