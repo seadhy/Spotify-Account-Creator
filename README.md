@@ -4,7 +4,6 @@
 ## 💻 Preview
 
 https://user-images.githubusercontent.com/82868382/210180402-b7a78468-0f6f-4467-aa0b-b6827fa6d2f6.mp4
-https://cdn.discordapp.com/attachments/1059142035933757571/1059163610598887546/seasmash_preview.mp4
 
 ## 👾 Features
 - Fully request based creator
