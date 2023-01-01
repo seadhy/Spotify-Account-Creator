@@ -3,9 +3,7 @@
 
 ## 💻 Preview
 
-![Console_Image](https://user-images.githubusercontent.com/82868382/206721924-4ab84558-dabb-48a2-a205-e2e70cf0474b.png)
-
-![Followers_Image](https://user-images.githubusercontent.com/82868382/202025646-c3118ac8-1126-4045-8493-bcb0150f0a74.png)
+![Preview_Video](https://user-images.githubusercontent.com/82868382/210180402-b7a78468-0f6f-4467-aa0b-b6827fa6d2f6.mp4)
 
 ## 👾 Features
 - Fully request based creator
