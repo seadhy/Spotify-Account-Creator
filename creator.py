@@ -353,51 +353,50 @@ class Gen:
                 birthday = self.faker.getBirthday()
 
                 payload = {
-                	"account_details": {
-                		"birthdate": birthday,
-                		"consent_flags": {
-                			"eula_agreed": True,
-                			"send_email": True,
-                			"third_party_email": True
-                		},
-                		"display_name": username,
-                		"email_and_password_identifier": {
-                			"email": mail,
-                			"password": password
-                		},
-                		"gender": randint(1, 2)
-                	},
-                	"callback_uri": "https://www.spotify.com/signup/challenge?locale=us",
-                	"client_info": {
-                		"api_key": "a1e486e2729f46d6bb368d6b2bcda326",
-                		"app_version": "v2",
-                		"capabilities": [
-                			1
-                		],
-                		"installation_id": str(uuid4()),
-                		"platform": "www"
-                	},
-                	"tracking": {
-                		"creation_flow": "",
-                		"creation_point": "https://www.spotify.com/uk/",
-                		"referrer": ""
-                	}
+                    "account_details": {
+                        "birthdate": birthday,
+                        "consent_flags": {
+                            "eula_agreed": True,
+                            "send_email": True,
+                            "third_party_email": True
+                        },
+                        "display_name": username,
+                        "email_and_password_identifier": {
+                            "email": mail,
+                            "password": password
+                        },
+                        "gender": randint(1, 2)
+                    },
+                    "callback_uri": "https://auth-callback.spotify.com/r/android/music/signup",
+                    "client_info": {
+                        "api_key": "142b583129b2df829de3656f9eb484e6",
+                        "app_version": "v2",
+                        "capabilities": [
+                            1
+                        ],
+                        "installation_id": str(uuid4()),
+                        "platform": "www"
+                    },
+                    "tracking": {
+                        "creation_flow": "",
+                        "creation_point": "https://www.spotify.com/tr/",
+                        "referrer": ""
+                    }
                 }
 
                 headers = {
-                    "Host": "spclient.wg.spotify.com",
-                    "Accept": "*/*",
-                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Referer": "https://www.spotify.com/",
-                    "Content-Type": "application/json",
-                    "Content-Length": str(len(json.dumps(payload))),
-                    "Origin": "https://www.spotify.com",
-                    "Connection": "keep-alive",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-site",
-                    "TE": "trailers"
+                    'accept': '*/*',
+                    'accept-encoding': 'gzip',
+                    'accept-language': 'tr-TR;q=1, en-US;q=0.5',
+                    "app-platform": "Android",
+                    'client-token': '',
+                    'connection': 'Keep-Alive',
+                    'Origin': 'https://www.spotify.com',
+                    'content-length': str(len(json.dumps(payload))),
+                    'host': 'spclient.wg.spotify.com',
+                    'spotify-app-version': '8.8.0.347',
+                    'user-agent': 'Spotify/8.8.0.347 Android/25 (SM-G988N)',
+                    'x-client-id': '9a8d2f0ce77a4e248bb71fefcb557637',
                 }
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload, timeout=15)
@@ -406,6 +405,7 @@ class Gen:
                     self.console.printsc(f'Account has been created with the name {username}.')
                     self.created += 1
                     self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
+
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
                     client_token = self.getClientToken(session)
