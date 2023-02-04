@@ -221,7 +221,7 @@ class Gen:
     def changeAvatar(self, session: httpx.Client, client_token: str, token: str, account_id: str):
         while True:
             try:
-                avatar = self.faker.getAvatar()
+                avatar = self.faker.getAvatar(self.settings['Create_PFP'])
 
                 headers = {
                     "Host": "image-upload.spotify.com",

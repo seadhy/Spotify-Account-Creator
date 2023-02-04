@@ -1,3 +1,4 @@
+import httpx
 from string import ascii_letters, digits, ascii_lowercase
 from random import choices, choice, randint
 from os import listdir
@@ -19,7 +20,19 @@ class Faker:
         if create_ai == 'n': return choice(self.usernames)
         return getUsername()
 
-    def getAvatar(self) -> bytes:
+    def getAvatar(self, with_ai: str) -> bytes:
+        if with_ai.lower() == 'y':
+            api = 'https://picsum.photos/512/512'
+            r = httpx.get(url=api)
+            img_url = (r.headers['location'])
+
+            response = httpx.get(url=img_url)
+
+            if response.status_code == 200:
+                with open('image.png', 'wb') as f:
+                    f.write(response.content)
+                with open('image.png', 'rb') as f:
+                    return f.read()
         image = open('data/avatars/' + choice(self.avatars), 'rb').read()
         return image
 
