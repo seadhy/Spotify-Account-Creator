@@ -1,11 +1,20 @@
-import httpx, json, sqlite3, threading
-from random import choice, randint
-from time import sleep
-from subprocess import call
-from uuid import uuid4
-from cursor import hide
-from modules.console import Console,Tools
-from modules.faker import Faker
+try:
+    import httpx
+    import json
+    import sqlite3
+    import threading
+    from random import choice, randint
+    from string import ascii_lowercase
+    from time import sleep
+    from subprocess import call
+    from uuid import uuid4
+    from cursor import hide
+    from modules.console import Console,Tools
+    from modules.faker import Faker
+except ModuleNotFoundError:
+    print('Modules not found! Please run `install.bat` and restart the tool.')
+    input()
+    exit()
 
 hide()
 call('cls', shell=True)
@@ -25,7 +34,7 @@ class Gen:
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.2.109.g7ec2c843'  # you can change value to new version
+        self.client_version = '1.2.5.516.g4a81b087'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -352,6 +361,8 @@ class Gen:
                 password = self.faker.getPassword(12)
                 birthday = self.faker.getBirthday()
 
+                client_token = self.getClientToken(session)
+
                 payload = {
                     "account_details": {
                         "birthdate": birthday,
@@ -389,14 +400,14 @@ class Gen:
                     'accept-encoding': 'gzip',
                     'accept-language': 'tr-TR;q=1, en-US;q=0.5',
                     "app-platform": "Android",
-                    'client-token': '',
+                    'client-token': client_token,
                     'connection': 'Keep-Alive',
                     'Origin': 'https://www.spotify.com',
                     'content-length': str(len(json.dumps(payload))),
                     'host': 'spclient.wg.spotify.com',
                     'spotify-app-version': '8.8.0.347',
                     'user-agent': 'Spotify/8.8.0.347 Android/25 (SM-G988N)',
-                    'x-client-id': '9a8d2f0ce77a4e248bb71fefcb557637',
+                    'x-client-id': "".join(choice(ascii_lowercase) for _ in range(32)),
                 }
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload, timeout=15)
@@ -408,7 +419,7 @@ class Gen:
 
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
-                    client_token = self.getClientToken(session)
+
                     token = self.getToken(session, login_token)
 
                     if self.settings['Change_Avatar'] == 'y':
