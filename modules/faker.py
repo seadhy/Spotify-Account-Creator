@@ -29,9 +29,9 @@ class Faker:
             response = httpx.get(url=img_url)
 
             if response.status_code == 200:
-                with open('image.png', 'wb') as f:
+                with open('data/avatars/temp_image.png', 'wb') as f:
                     f.write(response.content)
-                with open('image.png', 'rb') as f:
+                with open('data/avatars/temp_image.png', 'rb') as f:
                     return f.read()
         image = open('data/avatars/' + choice(self.avatars), 'rb').read()
         return image
