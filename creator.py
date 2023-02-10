@@ -410,7 +410,7 @@ class Gen:
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload, timeout=15)
 
-                if r.status_code == 200:
+                if r.status_code == 200 and 'success' in r.text:
                     self.console.printsc(f'Account has been created with the name {username}.')
                     Console.created += 1
 
