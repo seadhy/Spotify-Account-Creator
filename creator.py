@@ -20,6 +20,8 @@ hide()
 call('cls', shell=True)
 call('mode 200, 40', shell=True)
 
+lock = threading.Lock()
+
 
 class Gen:
     def __init__(self):
@@ -55,11 +57,11 @@ class Gen:
 
     @staticmethod
     def debugMode(*args):
-        threading.Lock.acquire()
+        lock.acquire()
         print('----------DEBUG------------')
         for _ in args: print(_)
         print('----------DEBUG------------')
-        threading.Lock.release()
+        lock.release()
 
     def getClientToken(self, session: httpx.Client) -> str:
         while True:
