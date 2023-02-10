@@ -30,6 +30,7 @@ class Gen:
 
         self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
         self.settings = self.config_file['settings']
+        self.target_settings = self.config_file['target_settings']
         self.follow_ids = self.config_file['follow_ids']
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
@@ -51,9 +52,6 @@ class Gen:
         self.cursor = self.connection.cursor()
         self.cursor.execute('CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
 
-        self.created = 0
-
-        self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
 
     @staticmethod
     def debugMode(*args):
@@ -349,7 +347,7 @@ class Gen:
             break
 
     def createAccount(self):
-        while True:
+        while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (self.target_settings['Use_Target'] != 'y'):
             try:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
@@ -414,8 +412,7 @@ class Gen:
 
                 if r.status_code == 200:
                     self.console.printsc(f'Account has been created with the name {username}.')
-                    self.created += 1
-                    self.tools.setTitle(self.settings['Threads'], len(self.proxies), self.created)
+                    Console.created += 1
 
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
@@ -455,8 +452,10 @@ class Gen:
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
+        self.console.printtc(threading.current_thread().name.rstrip(' (createAccount)').replace('-', ' ') + ' is closed.')
 
     def start(self):
+        threading.Thread(target=self.tools.titleChanger, args=[self.target_settings['Use_Target'], self.target_settings['Target_To']], name='Title Changer').start()
         while threading.active_count() < self.settings['Threads'] + 1:
             threading.Thread(target=self.createAccount).start()
 
