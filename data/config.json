@@ -8,7 +8,7 @@
         "Debug_Mode": "if you are not a developer, do not touch this value!! (if you're going to change you can just do 'y')"
     },
 	
-"target_settings": {
+	"target_settings": {
         "Use_Target": "y or n",
         "Target_To": 10
     },
