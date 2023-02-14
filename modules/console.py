@@ -67,7 +67,7 @@ class Tools:
             created_min = round(Console.created / ((perf_counter() - starting_time) / 60), 1)
             if use_target == 'y':
                 remaining = target_to - Console.created
-                if remaining != 0:
+                if remaining > 0:
                     windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 2}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
                 else:
                     windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 2}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
