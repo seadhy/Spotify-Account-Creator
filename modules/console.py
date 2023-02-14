@@ -68,15 +68,15 @@ class Tools:
             if use_target == 'y':
                 remaining = target_to - Console.created
                 if remaining != 0:
-                    windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 1}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
+                    windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 2}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
                 else:
-                    windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 1}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
+                    windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 2}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Remaining: {remaining}  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
                     sleep(5)
                     Console.printtc(threading.current_thread().name + " is closed. The program will close itself in 3 seconds...")
                     sleep(3)
                     exit()
             else:
-                windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 1}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
+                windll.kernel32.SetConsoleTitleW(f"Seasmash Spotify Creator  |  Threads: {active_count() - 2}  |  Created: {Console.created}  |  Speed: {created_min}/m  |  Elapsed: {round(perf_counter() - starting_time, 1)}s  |  Made by github.com/seadhy")
 
     @staticmethod
     def printLogo():

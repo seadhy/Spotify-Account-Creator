@@ -37,7 +37,7 @@ class Gen:
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.5.516.g4a81b087'  # you can change value to new version
+        self.client_version = '1.2.6.158.g62f997a7'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -456,7 +456,7 @@ class Gen:
 
     def start(self):
         threading.Thread(target=self.tools.titleChanger, args=[self.target_settings['Use_Target'], self.target_settings['Target_To']], name='Title Changer').start()
-        while threading.active_count() < self.settings['Threads'] + 1:
+        while threading.active_count() < self.settings['Threads'] + 2:
             threading.Thread(target=self.createAccount).start()
 
 
