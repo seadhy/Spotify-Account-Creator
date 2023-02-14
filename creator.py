@@ -221,7 +221,7 @@ class Gen:
     def changeAvatar(self, session: httpx.Client, client_token: str, token: str, account_id: str):
         while True:
             try:
-                avatar = self.faker.getAvatar(self.settings['Create_PFP'])
+                avatar = self.faker.getAvatar(self.settings['Create_Avatar'])
 
                 headers = {
                     "Host": "image-upload.spotify.com",
@@ -382,15 +382,13 @@ class Gen:
                     "client_info": {
                         "api_key": "142b583129b2df829de3656f9eb484e6",
                         "app_version": "v2",
-                        "capabilities": [
-                            1
-                        ],
+                        "capabilities": [1],
                         "installation_id": str(uuid4()),
-                        "platform": "www"
+                        "platform": "Android-ARM"
                     },
                     "tracking": {
                         "creation_flow": "",
-                        "creation_point": "https://www.spotify.com/tr/",
+                        "creation_point": "client_mobile",
                         "referrer": ""
                     }
                 }
