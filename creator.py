@@ -38,7 +38,7 @@ class Gen:
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
 
-        self.client_version = '1.2.6.158.g62f997a7'  # you can change value to new version
+        self.client_version = '1.2.7.797.gf7c82563'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -379,22 +379,29 @@ class Gen:
                     self.console.printe('Error opening link, retrying...')
                     if self.settings['Debug_Mode'] == 'y':
                         self.debugMode(r.text, r.status_code)
-            except Exception:
+            except Exception as e:
                 self.console.printe('Error mail verification, retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(str(e))
 
     def createAccount(self):
         while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (self.target_settings['Use_Target'] != 'y'):
             try:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"}, timeout=30)
+                    proxies = {"http://": f"http://{proxy}","https://": f"http://{proxy}"}
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies=proxies, timeout=30)
                 else:
                     session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
 
                 if self.settings['Verify_Mail'] == 'y':
-                    inbox = self.mail_service.generateMail()
-                    mail = inbox[0]
+                    if self.settings['Use_Proxy'] == 'y':
+                        inbox = self.mail_service.generateMail(proxies=proxies)
+                        mail = inbox[0]
+                    else:
+                        inbox = self.mail_service.generateMail()
+                        mail = inbox[0]
                 else:
                     mail = self.faker.getMail(16)
 
