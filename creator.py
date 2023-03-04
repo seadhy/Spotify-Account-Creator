@@ -3,14 +3,14 @@ try:
     import json
     import sqlite3
     import threading
-    from random import choice, randint
-    from string import ascii_lowercase
     from time import sleep
-    from subprocess import call
     from uuid import uuid4
     from cursor import hide
+    from subprocess import call
+    from random import choice, randint
     from modules.console import Console,Tools
     from modules.faker import Faker
+    from modules.mail_service import Mail
 except ModuleNotFoundError:
     print('Modules not found! Please run `install.bat` and restart the tool.')
     input()
@@ -29,6 +29,7 @@ class Gen:
         self.tools.printLogo()
         self.faker = Faker()
         self.console = Console()
+        self.mail_service = Mail()
 
         self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
         self.settings = self.config_file['settings']
@@ -59,7 +60,8 @@ class Gen:
     def debugMode(*args):
         lock.acquire()
         print('----------DEBUG------------')
-        for _ in args: print(_)
+        for _ in args:
+            print(_)
         print('----------DEBUG------------')
         lock.release()
 
@@ -108,7 +110,7 @@ class Gen:
         while True:
             headers = {
                 "Host": "www.spotify.com",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:106.0) Gecko/20100101 Firefox/106.0",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0",
                 "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
                 "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
                 "Accept-Encoding": "gzip, deflate, br",
@@ -308,7 +310,7 @@ class Gen:
                         if self.settings['Debug_Mode'] == 'y':
                             self.debugMode(r.text, r.status_code)
             except Exception:
-                self.console.printe('Error following, Retrying...')
+                self.console.printe('Error following, retrying...')
                 continue
             break
     def followArtist(self, session: httpx.Client, client_token: str, token: str):
@@ -348,16 +350,54 @@ class Gen:
 
             break
 
+    def verifyMail(self, session: httpx.Client, verification_link: str):
+        while True:
+            try:
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                    'Accept-Encoding': 'gzip, deflate, br',
+                    'DNT': '1',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Sec-Fetch-Dest': 'document',
+                    'Sec-Fetch-Mode': 'navigate',
+                    'Sec-Fetch-Site': 'none',
+                    'Sec-Fetch-User': '?1',
+                }
+
+                r = session.get(verification_link, headers=headers, follow_redirects=True)
+                if r.status_code == 200:
+                    if "account/email-verification" in r.text:
+                        self.console.printmf(verification_link[:150] + '...')
+                        break
+                    else:
+                        if self.settings['Debug_Mode'] == 'y':
+                            self.debugMode(r.text, r.status_code)
+                else:
+                    self.console.printe('Error opening link, retrying...')
+                    if self.settings['Debug_Mode'] == 'y':
+                        self.debugMode(r.text, r.status_code)
+            except Exception:
+                self.console.printe('Error mail verification, retrying...')
+
     def createAccount(self):
         while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (self.target_settings['Use_Target'] != 'y'):
             try:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"})
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies={"http://": f"http://{proxy}","https://": f"http://{proxy}"}, timeout=30)
                 else:
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"})
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
-                mail = self.faker.getMail(16)
+
+                if self.settings['Verify_Mail'] == 'y':
+                    inbox = self.mail_service.generateMail()
+                    mail = inbox[0]
+                else:
+                    mail = self.faker.getMail(16)
+
                 password = self.faker.getPassword(12)
                 birthday = self.faker.getBirthday()
 
@@ -405,14 +445,18 @@ class Gen:
                     'host': 'spclient.wg.spotify.com',
                     'spotify-app-version': '8.8.0.347',
                     'user-agent': 'Spotify/8.8.0.347 Android/25 (SM-G988N)',
-                    'x-client-id': "".join(choice(ascii_lowercase) for _ in range(32)),
+                    'x-client-id': str(uuid4()).replace('-', ''),
                 }
 
-                r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload, timeout=15)
+                r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
 
                 if r.status_code == 200 and 'success' in r.text:
                     self.console.printsc(f'Account has been created with the name {username}.')
                     Console.created += 1
+
+                    if self.settings['Verify_Mail'] == 'y':
+                        verification_link = self.mail_service.getVerificationLink(inbox[2])
+                        self.verifyMail(session, verification_link)
 
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']

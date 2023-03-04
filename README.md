@@ -7,8 +7,10 @@ https://user-images.githubusercontent.com/82868382/210181254-28da72a7-52c9-4bb1-
 
 ## 👾 Features
 - Fully request based creator
+- Auto Mail verify
 - Auto Playlist or Profile or Artist follow
 - Auto change avatars (pfps)
+- Auto scrape username & pfps
 - Save accounts SQLite database or text file
 - HTTP&HTTPS proxy support
 - Multi-Threading support
@@ -19,7 +21,9 @@ https://user-images.githubusercontent.com/82868382/210181254-28da72a7-52c9-4bb1-
 
 - ✅ 50 Stars | Add more optional choices
 
-- ❌ 150 Stars | Verify mail
+- ✅  150 Stars | Verify mail
+
+- ❌  250 Stars | Change Password (Accounts don't die with this)
 
 ## ✍️ Usage
 1. Run `install.bat`
