@@ -23,6 +23,10 @@ call('mode 200, 40', shell=True)
 lock = threading.Lock()
 
 
+# def checkVersion() -> bool:
+#     
+
+
 class Gen:
     def __init__(self):
         self.tools = Tools()
