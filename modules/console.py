@@ -62,7 +62,7 @@ class Tools:
     @staticmethod
     def set_terminal_title(title: str):
         if sys.platform.startswith('win'):
-            ctypes.windll.kernel32.SetConsoleTitleW(title)
+            windll.kernel32.SetConsoleTitleW(title)
         else:
             sys.stdout.write(f"\x1b]2;{title}\x07")
             sys.stdout.flush()
