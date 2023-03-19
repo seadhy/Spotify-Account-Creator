@@ -23,8 +23,23 @@ call('mode 200, 40', shell=True)
 lock = threading.Lock()
 
 
-# def checkVersion() -> bool:
-#     
+def checkVersion() -> bool:
+    r = httpx.get('https://raw.githubusercontent.com/seadhy/Spotify-Account-Creator/main/modules/__version__.py')
+    if r.status_code == 200:
+        global_data = dict()
+        local_data = dict()
+
+        exec(r.text, global_data)
+
+        with open('modules/__version__.py', 'r', encoding='utf-8') as f:
+            exec(f.read(), local_data)
+
+        if local_data['__version__'] == global_data['__version__']:
+            return True
+        else:
+            return False
+    else:
+        return True
 
 
 class Gen:
@@ -516,5 +531,8 @@ class Gen:
 
 
 if __name__ == '__main__':
-    gen = Gen()
-    gen.start()
+    if checkVersion():
+        gen = Gen()
+        gen.start()
+    else:
+        print('Found some updates on the project! Download the latest version from https://github.com/seadhy/Spotify-Account-Creator to use the tool!')
