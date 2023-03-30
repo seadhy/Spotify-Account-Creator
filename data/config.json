@@ -2,7 +2,7 @@
     "settings": {
         "Threads": 3,
         "Create_Username": "y or n",
-		"Create_Avatar": "y or n",
+	"Create_Avatar": "y or n",
         "Change_Avatar": "y or n",
         "Use_Proxy": "y or n",
         "Verify_Mail": "y or n",
