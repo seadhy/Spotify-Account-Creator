@@ -3,6 +3,7 @@ try:
     import json
     import sqlite3
     import threading
+    import sys
     from time import sleep
     from uuid import uuid4
     from cursor import hide
@@ -11,17 +12,23 @@ try:
     from modules.console import Console,Tools
     from modules.faker import Faker
     from modules.mail_service import Mail
+    from modules.emailnator import Emailnator
 except ModuleNotFoundError:
     print('Modules not found! Please run `install.bat` and restart the tool.')
     input()
     exit()
 
-hide()
-call('cls', shell=True)
-call('mode 200, 40', shell=True)
+os = sys.platform
+
+if os == 'win32':
+    hide()
+    call('cls', shell=True)
+    call('mode 200, 40', shell=True)
+else:
+    call('clear', shell=True)
 
 lock = threading.Lock()
-
+emailnator = Emailnator()
 
 def checkVersion() -> bool:
     r = httpx.get('https://raw.githubusercontent.com/seadhy/Spotify-Account-Creator/main/modules/__version__.py')
@@ -414,13 +421,14 @@ class Gen:
                     session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
 
+                cookies = emailnator.getCookies()
+
                 if self.settings['Verify_Mail'] == 'y':
-                    if self.settings['Use_Proxy'] == 'y':
-                        inbox = self.mail_service.generateMail(proxies=proxies)
-                        mail = inbox[0]
-                    else:
-                        inbox = self.mail_service.generateMail()
-                        mail = inbox[0]
+                        if self.settings['Use_Emailnator'] == 'y':
+                            mail = emailnator.generateMail(cookies)             
+                        else:
+                            inbox = self.mail_service.generateMail(proxy=proxy if self.settings['Use_Proxy'] == 'y' else None)
+                            mail = inbox[0]
                 else:
                     mail = self.faker.getMail(16)
 
@@ -475,32 +483,23 @@ class Gen:
                 }
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
-
+                
                 if r.status_code == 200 and 'success' in r.text:
                     self.console.printsc(f'Account has been created with the name {username}.')
                     Console.created += 1
 
                     if self.settings['Verify_Mail'] == 'y':
-                        verification_link = self.mail_service.getVerificationLink(inbox[2])
-                        self.verifyMail(session, verification_link)
+                        if self.settings['Use_Emailnator'] == 'y':
+                            verification_link =emailnator.getVerificationLink(cookies, mail)
+                            self.verifyMail(session, verification_link)
+                        else:
+                            verification_link = self.mail_service.getVerificationLink(inbox[2])
+                            self.verifyMail(session, verification_link)
 
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
 
                     token = self.getToken(session, login_token)
-
-                    if self.settings['Change_Avatar'] == 'y':
-                        self.changeAvatar(session, client_token, token, account_id)
-
-
-                    if self.follow_types['Profile'] == 'y':
-                        self.followAccount(session, client_token, token)
-
-                    if self.follow_types['Playlist'] == 'y':
-                        self.followPlaylist(session, client_token, token)
-
-                    if self.follow_types['Artist'] == 'y':
-                        self.followArtist(session, client_token, token)
 
                     if self.save_methods['Text_File'] == 'y':
                         with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
@@ -512,13 +511,27 @@ class Gen:
                         self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
                         self.connection.commit()
 
+                    if self.settings['Change_Avatar'] == 'y':
+                        self.changeAvatar(session, client_token, token, account_id)
+
+                    if self.follow_types['Profile'] == 'y':
+                        self.followAccount(session, client_token, token)
+
+                    if self.follow_types['Playlist'] == 'y':
+                        self.followPlaylist(session, client_token, token)
+
+                    if self.follow_types['Artist'] == 'y':
+                        self.followArtist(session, client_token, token)
+
                 elif 'VPN' in r.text:
                     self.console.printe(f'Account not created. Bad proxies: {proxy}')
-                    # self.proxies.remove(proxy)
+                    if self.settings['Remove_Bad_Proxies'] == 'y':
+                         self.proxies.remove(proxy)
                 else:
                     self.console.printe('Account not created.')
                     if self.settings['Debug_Mode'] == 'y':
                         self.debugMode(r.text, r.status_code)
+
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
