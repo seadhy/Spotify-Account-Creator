@@ -1,15 +1,15 @@
 try:
     import httpx
+    import sys
     import json
     import sqlite3
     import threading
-    import sys
     from time import sleep
     from uuid import uuid4
     from cursor import hide
     from subprocess import call
     from random import choice, randint
-    from modules.console import Console,Tools
+    from modules.console import Console, Tools
     from modules.faker import Faker
     from modules.mail_service import Mail
     from modules.emailnator import Emailnator
@@ -18,9 +18,7 @@ except ModuleNotFoundError:
     input()
     exit()
 
-os = sys.platform
-
-if os == 'win32':
+if sys.platform == 'win32':
     hide()
     call('cls', shell=True)
     call('mode 200, 40', shell=True)
@@ -28,7 +26,7 @@ else:
     call('clear', shell=True)
 
 lock = threading.Lock()
-emailnator = Emailnator()
+
 
 def checkVersion() -> bool:
     r = httpx.get('https://raw.githubusercontent.com/seadhy/Spotify-Account-Creator/main/modules/__version__.py')
@@ -55,16 +53,22 @@ class Gen:
         self.tools.printLogo()
         self.faker = Faker()
         self.console = Console()
-        self.mail_service = Mail()
+        self.mail_tm = Mail()
 
         self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
         self.settings = self.config_file['settings']
+        self.verification_settings = self.config_file['verification_settings']
         self.target_settings = self.config_file['target_settings']
         self.follow_ids = self.config_file['follow_ids']
         self.follow_types = self.config_file['follow_types']
         self.save_methods = self.config_file['save_methods']
+        self.mail_services = list()
 
-        self.client_version = '1.2.7.797.gf7c82563'  # you can change value to new version
+        for service in self.config_file['verification_settings']['Services'].keys():
+            self.mail_services.append(service) if self.config_file['verification_settings']['Services'][service] == 'y' else None
+
+
+        self.client_version = '1.2.10.278.g261ea664'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -79,8 +83,8 @@ class Gen:
 
         self.connection = sqlite3.connect('saved/database.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
-        self.cursor.execute('CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
-
+        self.cursor.execute(
+            'CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
 
     @staticmethod
     def debugMode(*args):
@@ -94,16 +98,16 @@ class Gen:
     def getClientToken(self, session: httpx.Client) -> str:
         while True:
             payload = {
-            	"client_data": {
-            		"client_id": "d8a5ed958d274c2e8ee717e6a4b0971d",
-            		"client_version": self.client_version,
-            		"js_sdk_data": {
-            			"device_brand": "unknown",
-            			"device_model": "desktop",
-            			"os": "Windows",
-            			"os_version": "NT 10.0"
-            		}
-            	}
+                "client_data": {
+                    "client_id": "d8a5ed958d274c2e8ee717e6a4b0971d",
+                    "client_version": self.client_version,
+                    "js_sdk_data": {
+                        "device_brand": "unknown",
+                        "device_model": "desktop",
+                        "os": "Windows",
+                        "os_version": "NT 10.0"
+                    }
+                }
             }
 
             headers = {
@@ -122,7 +126,6 @@ class Gen:
                 "TE": "trailers"
             }
 
-
             r = session.post(url='https://clienttoken.spotify.com/v1/clienttoken', headers=headers, json=payload)
             if r.status_code == 200:
                 return r.json()['granted_token']['token']
@@ -130,7 +133,6 @@ class Gen:
                 self.console.printe('Failed to get Client Token. Retrying...')
                 if self.settings['Debug_Mode'] == 'y':
                     self.debugMode(r.text, r.status_code)
-
 
     def getCsrfToken(self, session: httpx.Client) -> str:
         while True:
@@ -198,7 +200,9 @@ class Gen:
                     "TE": "trailers"
                 }
 
-                r2 = session.get(url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player', headers=headers)
+                r2 = session.get(
+                    url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player',
+                    headers=headers)
                 if r2.status_code == 200:
                     return r2.json()['accessToken']
                 else:
@@ -233,7 +237,8 @@ class Gen:
                         "TE": "trailers"
                     }
 
-                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}', headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}',
+                                    headers=headers)
 
                     if r.status_code == 204:
                         self.console.printi(f'Successfully followed to account: [{account_id}]')
@@ -291,7 +296,9 @@ class Gen:
                         'TE': 'trailers',
                     }
 
-                    r2 = session.post(url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}', headers=headers)
+                    r2 = session.post(
+                        url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}',
+                        headers=headers)
                     if r2.status_code == 200:
                         self.console.printhc('Successfully pfp changed.')
                         break
@@ -328,7 +335,8 @@ class Gen:
                         'TE': 'trailers'
                     }
 
-                    r = session.put(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/followers', headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/followers',
+                                    headers=headers)
                     if r.status_code == 200:
                         self.console.printi(f'Successfully followed to playlist: [{playlist_id}]')
                     else:
@@ -339,6 +347,7 @@ class Gen:
                 self.console.printe('Error following, retrying...')
                 continue
             break
+
     def followArtist(self, session: httpx.Client, client_token: str, token: str):
         while True:
             try:
@@ -362,7 +371,8 @@ class Gen:
                         "TE": "trailers"
                     }
 
-                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={artist_id}', headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={artist_id}',
+                                    headers=headers)
 
                     if r.status_code == 204:
                         self.console.printi(f'Successfully followed to artist account: [{artist_id}]')
@@ -411,24 +421,28 @@ class Gen:
                     self.debugMode(str(e))
 
     def createAccount(self):
-        while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (self.target_settings['Use_Target'] != 'y'):
+        while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (
+                self.target_settings['Use_Target'] != 'y'):
             try:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
-                    proxies = {"http://": f"http://{proxy}","https://": f"http://{proxy}"}
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies=proxies, timeout=30)
+                    proxies = {"http://": f"http://{proxy}", "https://": f"http://{proxy}"}
+                    session = httpx.Client(headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"},
+                        proxies=proxies, timeout=30)
                 else:
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
+                    session = httpx.Client(headers={
+                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"},
+                        timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
 
-                cookies = emailnator.getCookies()
-
-                if self.settings['Verify_Mail'] == 'y':
-                        if self.settings['Use_Emailnator'] == 'y':
-                            mail = emailnator.generateMail(cookies)             
-                        else:
-                            inbox = self.mail_service.generateMail(proxy=proxy if self.settings['Use_Proxy'] == 'y' else None)
-                            mail = inbox[0]
+                if self.verification_settings['Verify_Mail'] == 'y':
+                    if choice(self.mail_services) == 'Use_MailTM':
+                        inbox = self.mail_tm.generateMail(proxies=proxies if self.settings['Use_Proxy'] else None)
+                        mail = inbox[0]
+                    else:
+                        emailnator = Emailnator()
+                        mail = emailnator.generate_mail()
                 else:
                     mail = self.faker.getMail(16)
 
@@ -470,7 +484,7 @@ class Gen:
                 headers = {
                     'accept': '*/*',
                     'accept-encoding': 'gzip',
-                    'accept-language': 'tr-TR;q=1, en-US;q=0.5',
+                    'accept-language': 'en-US;q=0.5',
                     "app-platform": "Android",
                     'client-token': client_token,
                     'connection': 'Keep-Alive',
@@ -483,33 +497,22 @@ class Gen:
                 }
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
-                
+
                 if r.status_code == 200 and 'success' in r.text:
                     self.console.printsc(f'Account has been created with the name {username}.')
-                    Console.created += 1
 
-                    if self.settings['Verify_Mail'] == 'y':
-                        if self.settings['Use_Emailnator'] == 'y':
-                            verification_link =emailnator.getVerificationLink(cookies, mail)
-                            self.verifyMail(session, verification_link)
+                    if self.verification_settings['Verify_Mail'] == 'y':
+                        if not ('@gmail.com' in mail):
+                            verification_link = self.mail_tm.getVerificationLink(inbox[2])
                         else:
-                            verification_link = self.mail_service.getVerificationLink(inbox[2])
-                            self.verifyMail(session, verification_link)
+                            verification_link = emailnator.get_verification_link(mail)
+
+                        self.verifyMail(session, verification_link)
 
                     account_id = r.json()['success']['username']
                     login_token = r.json()['success']['login_token']
 
                     token = self.getToken(session, login_token)
-
-                    if self.save_methods['Text_File'] == 'y':
-                        with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
-                            f.write(f"{username}:{mail}:{password}\n")
-                        with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
-                            f.write(f"{token}\n")
-
-                    if self.save_methods['SQLite'] == 'y':
-                        self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
-                        self.connection.commit()
 
                     if self.settings['Change_Avatar'] == 'y':
                         self.changeAvatar(session, client_token, token, account_id)
@@ -523,10 +526,23 @@ class Gen:
                     if self.follow_types['Artist'] == 'y':
                         self.followArtist(session, client_token, token)
 
+                    if self.save_methods['Text_File'] == 'y':
+                        with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
+                            f.write(f"{username}:{mail}:{password}\n")
+                        with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
+                            f.write(f"{token}\n")
+
+                    if self.save_methods['SQLite'] == 'y':
+                        self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)',
+                                            (account_id, username, mail, password, login_token, token))
+                        self.connection.commit()
+
+                    Console.created += 1
+
                 elif 'VPN' in r.text:
                     self.console.printe(f'Account not created. Bad proxies: {proxy}')
                     if self.settings['Remove_Bad_Proxies'] == 'y':
-                         self.proxies.remove(proxy)
+                        self.proxies.remove(proxy)
                 else:
                     self.console.printe('Account not created.')
                     if self.settings['Debug_Mode'] == 'y':
@@ -535,10 +551,13 @@ class Gen:
             except Exception as e:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
+
         self.console.printtc(threading.current_thread().name.rstrip(' (createAccount)').replace('-', ' ') + ' is closed.')
 
     def start(self):
-        threading.Thread(target=self.tools.titleChanger, args=[self.target_settings['Use_Target'], self.target_settings['Target_To']], name='Title Changer').start()
+        threading.Thread(target=self.tools.titleChanger,
+                         args=[self.target_settings['Use_Target'], self.target_settings['Target_To']],
+                         name='Title Changer').start()
         while threading.active_count() < self.settings['Threads'] + 2:
             threading.Thread(target=self.createAccount).start()
 
