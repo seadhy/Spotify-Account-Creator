@@ -83,8 +83,7 @@ class Gen:
 
         self.connection = sqlite3.connect('saved/database.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
-        self.cursor.execute(
-            'CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
+        self.cursor.execute('CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
 
     @staticmethod
     def debugMode(*args):
@@ -200,9 +199,7 @@ class Gen:
                     "TE": "trailers"
                 }
 
-                r2 = session.get(
-                    url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player',
-                    headers=headers)
+                r2 = session.get(url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player', headers=headers)
                 if r2.status_code == 200:
                     return r2.json()['accessToken']
                 else:
@@ -237,8 +234,7 @@ class Gen:
                         "TE": "trailers"
                     }
 
-                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}',
-                                    headers=headers)
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}', headers=headers)
 
                     if r.status_code == 204:
                         self.console.printi(f'Successfully followed to account: [{account_id}]')
@@ -427,13 +423,9 @@ class Gen:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
                     proxies = {"http://": f"http://{proxy}", "https://": f"http://{proxy}"}
-                    session = httpx.Client(headers={
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"},
-                        proxies=proxies, timeout=30)
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies=proxies, timeout=30)
                 else:
-                    session = httpx.Client(headers={
-                        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"},
-                        timeout=30)
+                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
 
                 if self.verification_settings['Verify_Mail'] == 'y':
@@ -555,9 +547,7 @@ class Gen:
         self.console.printtc(threading.current_thread().name.rstrip(' (createAccount)').replace('-', ' ') + ' is closed.')
 
     def start(self):
-        threading.Thread(target=self.tools.titleChanger,
-                         args=[self.target_settings['Use_Target'], self.target_settings['Target_To']],
-                         name='Title Changer').start()
+        threading.Thread(target=self.tools.titleChanger, args=[self.target_settings['Use_Target'], self.target_settings['Target_To']], name='Title Changer').start()
         while threading.active_count() < self.settings['Threads'] + 2:
             threading.Thread(target=self.createAccount).start()
 
