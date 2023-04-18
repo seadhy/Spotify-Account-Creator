@@ -532,9 +532,12 @@ class Gen:
                     Console.created += 1
 
                 elif 'VPN' in r.text:
-                    self.console.printe(f'Account not created. Bad proxies: {proxy}')
-                    if self.settings['Remove_Bad_Proxies'] == 'y':
-                        self.proxies.remove(proxy)
+                    try:
+                        self.console.printe(f'Account not created. Bad proxies: {proxy}')
+                        if self.settings['Remove_Bad_Proxies'] == 'y':
+                            self.proxies.remove(proxy)
+                    except UnboundLocalError:
+                        self.console.printe(f'Account not created. Please don\'t use the tool with VPN.')
                 else:
                     self.console.printe('Account not created.')
                     if self.settings['Debug_Mode'] == 'y':
