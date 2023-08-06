@@ -23,7 +23,10 @@ https://user-images.githubusercontent.com/82868382/210181254-28da72a7-52c9-4bb1-
 
 - ✅  150 Stars | Verify mail
 
-- ❌  250 Stars | Change Password (Accounts don't die with this)
+- ✅  250 Stars | Fixed all issue, added bypassing challenge
+
+- ❌  350 Stars | Bypass Recaptcha Challenge
+
 
 ## ✍️ Usage
 1. Run `install.bat`

@@ -54,8 +54,14 @@ class Gen:
         self.faker = Faker()
         self.console = Console()
         self.mail_tm = Mail()
-
-        self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
+        
+        
+        try:
+            self.config_file = json.load(open('data/config.json', 'r', encoding='utf-8'))
+        except json.decoder.JSONDecodeError as e:
+            self.console.printe(f'Failed to read config file! Please fix this part: {str(e).split(":")[1].strip().capitalize()}.')
+            exit()
+            
         self.settings = self.config_file['settings']
         self.verification_settings = self.config_file['verification_settings']
         self.target_settings = self.config_file['target_settings']
@@ -68,7 +74,7 @@ class Gen:
             self.mail_services.append(service) if self.config_file['verification_settings']['Services'][service] == 'y' else None
 
 
-        self.client_version = '1.2.10.278.g261ea664'  # you can change value to new version
+        self.client_version = '1.2.18.564.g83d531e5'  # you can change value to new version
 
         self.proxies = open('data/proxies.txt', 'r', encoding='utf-8').read().splitlines()
         if len(self.proxies) == 0 and self.settings['Use_Proxy'] == 'y':
@@ -84,7 +90,7 @@ class Gen:
         self.connection = sqlite3.connect('saved/database.db', check_same_thread=False)
         self.cursor = self.connection.cursor()
         self.cursor.execute('CREATE TABLE IF NOT EXISTS accounts (Account_ID TEXT, Account_Name TEXT, Account_Mail TEXT, Account_Password TEXT, Login_Token TEXT, Bearer_Token TEXT)')
-
+        
     @staticmethod
     def debugMode(*args):
         lock.acquire()
@@ -97,35 +103,37 @@ class Gen:
     def getClientToken(self, session: httpx.Client) -> str:
         while True:
             payload = {
-                "client_data": {
-                    "client_id": "d8a5ed958d274c2e8ee717e6a4b0971d",
-                    "client_version": self.client_version,
-                    "js_sdk_data": {
-                        "device_brand": "unknown",
-                        "device_model": "desktop",
-                        "os": "Windows",
-                        "os_version": "NT 10.0"
+                'client_data': {
+                    'client_version': self.client_version,
+                    'client_id': 'd8a5ed958d274c2e8ee717e6a4b0971d',
+                    'js_sdk_data': {
+                        'device_brand': 'unknown',
+                        'device_model': 'unknown',
+                        'os': 'windows',
+                        'os_version': 'NT 10.0',
+                        'device_id': str(uuid4()),
+                        'device_type': 'computer'
                     }
                 }
             }
 
             headers = {
-                "Host": "clienttoken.spotify.com",
-                "Accept": "application/json",
-                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Content-Type": "application/json",
-                "Content-Length": str(len(json.dumps(payload))),
-                "Origin": "https://open.spotify.com",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-site",
-                "Referer": "https://open.spotify.com/",
-                "Connection": "keep-alive",
-                "TE": "trailers"
+                'authority': 'clienttoken.spotify.com',
+                'accept': 'application/json',
+                'accept-language': 'en-US,en;q=0.9',
+                'content-type': 'application/json',
+                'origin': 'https://open.spotify.com',
+                'referer': 'https://open.spotify.com/',
+                'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-site',
             }
 
             r = session.post(url='https://clienttoken.spotify.com/v1/clienttoken', headers=headers, json=payload)
+            
             if r.status_code == 200:
                 return r.json()['granted_token']['token']
             else:
@@ -136,18 +144,17 @@ class Gen:
     def getCsrfToken(self, session: httpx.Client) -> str:
         while True:
             headers = {
-                "Host": "www.spotify.com",
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Connection": "keep-alive",
-                "Upgrade-Insecure-Requests": "1",
-                "Sec-Fetch-Dest": "document",
-                "Sec-Fetch-Mode": "navigate",
-                "Sec-Fetch-Site": "none",
-                "Sec-Fetch-User": "?1",
-                "TE": "trailers"
+                'authority': 'www.spotify.com',
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                'accept-language': 'en-US,en;q=0.9',
+                'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'document',
+                'sec-fetch-mode': 'navigate',
+                'sec-fetch-site': 'none',
+                'sec-fetch-user': '?1',
+                'upgrade-insecure-requests': '1',
             }
 
             r = session.get(url='https://www.spotify.com/us/signup', headers=headers)
@@ -160,43 +167,38 @@ class Gen:
                     self.debugMode(r.text, r.status_code)
 
     def getToken(self, session: httpx.Client, login_token: str) -> str:
-        while True:
+        while True:   
             headers = {
-                "Host": "www.spotify.com",
-                "Accept": "*/*",
-                "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Referer": "https://www.spotify.com/us/signup?forward_url=https%3A%2F%2Fopen.spotify.com%2F",
-                "Content-Type": "application/x-www-form-urlencoded",
-                "X-CSRF-Token": self.getCsrfToken(session),
-                "X-KL-Ajax-Request": "Ajax_Request",
-                "Content-Length": "28",
-                "Origin": "https://www.spotify.com",
-                "Connection": "keep-alive",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-origin",
-                "TE": "trailers"
+                'authority': 'www.spotify.com',
+                'accept': '*/*',
+                'accept-language': 'en-US,en;q=0.9',
+                'content-type': 'application/x-www-form-urlencoded',
+                'origin': 'https://www.spotify.com',
+                'referer': 'https://www.spotify.com/us/signup',
+                'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                'sec-ch-ua-mobile': '?0',
+                'sec-ch-ua-platform': '"Windows"',
+                'sec-fetch-dest': 'empty',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-origin',
+                'x-csrf-token': self.getCsrfToken(session),
             }
 
             r1 = session.post(url='https://www.spotify.com/api/signup/authenticate', headers=headers, data=f'splot={login_token}')
 
             if r1.status_code == 200:
                 headers = {
-                    "Accept": "application/json",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                    "Connection": "keep-alive",
-                    "Upgrade-Insecure-Requests": "1",
-                    "spotify-app-version": self.client_version,
-                    "app-platform": "WebPlayer",
-                    "Host": "open.spotify.com",
-                    "Referer": "https://open.spotify.com/",
-                    "Sec-Fetch-Dest": "document",
-                    "Sec-Fetch-Mode": "navigate",
-                    "Sec-Fetch-Site": "none",
-                    "Sec-Fetch-User": "?1",
-                    "TE": "trailers"
+                    'authority': 'open.spotify.com',
+                    'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'accept-language': 'en-US,en;q=0.9',
+                    'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'document',
+                    'sec-fetch-mode': 'navigate',
+                    'sec-fetch-site': 'none',
+                    'sec-fetch-user': '?1',
+                    'upgrade-insecure-requests': '1',
                 }
 
                 r2 = session.get(url='https://open.spotify.com/get_access_token?reason=transport&productType=web_player', headers=headers)
@@ -214,24 +216,23 @@ class Gen:
     def followAccount(self, session: httpx.Client, client_token: str, token: str):
         while True:
             for account_id in self.follow_ids["Account_IDs"]:
-                try:
+                try:  
                     headers = {
-                        "Host": "api.spotify.com",
-                        "Accept": "application/json",
-                        "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                        "Accept-Encoding": "gzip, deflate, br",
-                        "app-platform": "WebPlayer",
-                        "spotify-app-version": self.client_version,
-                        "client-token": client_token,
-                        "Origin": "https://open.spotify.com",
-                        "Sec-Fetch-Dest": "empty",
-                        "Sec-Fetch-Mode": "cors",
-                        "Sec-Fetch-Site": "same-site",
-                        "authorization": f"Bearer {token}",
-                        "Referer": "https://open.spotify.com/",
-                        "Connection": "keep-alive",
-                        "Content-Length": "0",
-                        "TE": "trailers"
+                        'authority': 'api.spotify.com',
+                        'accept': 'application/json',
+                        'accept-language': 'en',
+                        'app-platform': 'WebPlayer',
+                        'authorization': f'Bearer {token}',
+                        'client-token': client_token,
+                        'origin': 'https://open.spotify.com',
+                        'referer': 'https://open.spotify.com/',
+                        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"Windows"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-site',
+                        'spotify-app-version': self.client_version,
                     }
 
                     r = session.put(url=f'https://api.spotify.com/v1/me/following?type=user&ids={account_id}', headers=headers)
@@ -251,23 +252,24 @@ class Gen:
         while True:
             try:
                 avatar = self.faker.getAvatar(self.settings['Create_Avatar'])
-
+                
                 headers = {
-                    "Host": "image-upload.spotify.com",
-                    "Accept": "application/json",
-                    "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                    "Accept-Encoding": "gzip, deflate, br",
-                    "Content-Type": "image/jpeg",
-                    "client-token": client_token,
-                    "Origin": "https://open.spotify.com",
-                    "Sec-Fetch-Dest": "empty",
-                    "Sec-Fetch-Mode": "cors",
-                    "Sec-Fetch-Site": "same-site",
-                    "authorization": f"Bearer {token}",
-                    "Referer": "https://open.spotify.com/",
-                    "Connection": "keep-alive",
-                    "TE": "trailers"
+                    'authority': 'image-upload.spotify.com',
+                    'accept': 'application/json',
+                    'accept-language': 'en',
+                    'authorization': f'Bearer {token}',
+                    'client-token': client_token,
+                    'content-type': 'image/jpeg',
+                    'origin': 'https://open.spotify.com',
+                    'referer': 'https://open.spotify.com/',
+                    'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"',
+                    'sec-fetch-dest': 'empty',
+                    'sec-fetch-mode': 'cors',
+                    'sec-fetch-site': 'same-site',
                 }
+
 
                 r1 = session.post(url='https://image-upload.spotify.com/v4/user-profile', headers=headers, data=avatar)
 
@@ -276,7 +278,7 @@ class Gen:
 
                     headers = {
                         'Accept': 'application/json',
-                        'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
+                        'Accept-Language': 'en-US,en;q=0.9',
                         'Accept-Encoding': 'gzip, deflate, br',
                         'app-platform': 'WebPlayer',
                         'spotify-app-version': self.client_version,
@@ -287,14 +289,10 @@ class Gen:
                         'Sec-Fetch-Site': 'same-site',
                         'authorization': f'Bearer {token}',
                         'Referer': 'https://open.spotify.com/',
-                        'Connection': 'keep-alive',
-                        'Content-Length': '0',
-                        'TE': 'trailers',
+                        'Connection': 'keep-alive'
                     }
 
-                    r2 = session.post(
-                        url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}',
-                        headers=headers)
+                    r2 = session.post(url=f'https://spclient.wg.spotify.com/identity/v3/profile-image/{account_id}/{upload_token}',headers=headers)
                     if r2.status_code == 200:
                         self.console.printhc('Successfully pfp changed.')
                         break
@@ -312,23 +310,23 @@ class Gen:
     def followPlaylist(self, session: httpx.Client, client_token: str, token: str):
         while True:
             try:
-                for playlist_id in self.follow_ids["Playlist_IDs"]:
+                for playlist_id in self.follow_ids['Playlist_IDs']:
                     headers = {
-                        'Accept': 'application/json',
-                        'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                        'Accept-Encoding': 'gzip, deflate, br',
-                        'Content-Type': 'application/json;charset=UTF-8',
+                        'authority': 'api.spotify.com',
+                        'accept': 'application/json',
+                        'accept-language': 'en',
                         'app-platform': 'WebPlayer',
-                        'spotify-app-version': self.client_version,
-                        'client-token': client_token,
-                        'Origin': 'https://open.spotify.com',
-                        'Sec-Fetch-Dest': 'empty',
-                        'Sec-Fetch-Mode': 'cors',
-                        'Sec-Fetch-Site': 'same-site',
                         'authorization': f'Bearer {token}',
-                        'Referer': 'https://open.spotify.com/',
-                        'Connection': 'keep-alive',
-                        'TE': 'trailers'
+                        'client-token': client_token,
+                        'origin': 'https://open.spotify.com',
+                        'referer': 'https://open.spotify.com/',
+                        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"Windows"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-site',
+                        'spotify-app-version': self.client_version,
                     }
 
                     r = session.put(url=f'https://api.spotify.com/v1/playlists/{playlist_id}/followers',
@@ -347,28 +345,26 @@ class Gen:
     def followArtist(self, session: httpx.Client, client_token: str, token: str):
         while True:
             try:
-                for artist_id in self.follow_ids["Artist_IDs"]:
+                for artist_id in self.follow_ids['Artist_IDs']:
                     headers = {
-                        "Host": "api.spotify.com",
-                        "Accept": "application/json",
-                        "Accept-Language": "tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3",
-                        "Accept-Encoding": "gzip, deflate, br",
-                        "app-platform": "WebPlayer",
-                        "spotify-app-version": self.client_version,
-                        "client-token": client_token,
-                        "Origin": "https://open.spotify.com",
-                        "Sec-Fetch-Dest": "empty",
-                        "Sec-Fetch-Mode": "cors",
-                        "Sec-Fetch-Site": "same-site",
-                        "authorization": f"Bearer {token}",
-                        "Referer": "https://open.spotify.com/",
-                        "Connection": "keep-alive",
-                        "Content-Length": "0",
-                        "TE": "trailers"
+                        'authority': 'api.spotify.com',
+                        'accept': 'application/json',
+                        'accept-language': 'en',
+                        'app-platform': 'WebPlayer',
+                        'authorization': f'Bearer {token}',
+                        'client-token': client_token,
+                        'origin': 'https://open.spotify.com',
+                        'referer': 'https://open.spotify.com/',
+                        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"Windows"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-site',
+                        'spotify-app-version': self.client_version,
                     }
-
-                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={artist_id}',
-                                    headers=headers)
+                    
+                    r = session.put(url=f'https://api.spotify.com/v1/me/following?type=artist&ids={artist_id}', headers=headers)
 
                     if r.status_code == 204:
                         self.console.printi(f'Successfully followed to artist account: [{artist_id}]')
@@ -386,22 +382,47 @@ class Gen:
         while True:
             try:
                 headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0',
-                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-                    'Accept-Language': 'tr-TR,tr;q=0.8,en-US;q=0.5,en;q=0.3',
-                    'Accept-Encoding': 'gzip, deflate, br',
-                    'DNT': '1',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+                    'Accept-Language': 'en-US,en;q=0.9',
                     'Connection': 'keep-alive',
-                    'Upgrade-Insecure-Requests': '1',
                     'Sec-Fetch-Dest': 'document',
                     'Sec-Fetch-Mode': 'navigate',
                     'Sec-Fetch-Site': 'none',
                     'Sec-Fetch-User': '?1',
+                    'Upgrade-Insecure-Requests': '1',
+                    'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                    'sec-ch-ua-mobile': '?0',
+                    'sec-ch-ua-platform': '"Windows"'
                 }
-
+                
                 r = session.get(verification_link, headers=headers, follow_redirects=True)
+
+
                 if r.status_code == 200:
-                    if "account/email-verification" in r.text:
+                    
+                    url = str(r.url)
+                    verification_token = url.split('?t=')[1].split('&')[0]
+                                        
+                    headers = {
+                        'authority': 'www.spotify.com',
+                        'accept': '*/*',
+                        'accept-language': 'en-US,en;q=0.9',
+                        'content-type': 'text/plain;charset=UTF-8',
+                        'origin': 'https://www.spotify.com',
+                        'referer': url,
+                        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"Windows"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-origin'
+                    }
+
+                    payload = {'token': verification_token}
+
+                    r = session.post('https://www.spotify.com/api/email-verify/v1/verify',  headers=headers, json=payload)
+                                                                                    
+                    if r.json()['success']:
                         self.console.printmf(verification_link[:150] + '...')
                         break
                     else:
@@ -416,21 +437,144 @@ class Gen:
                 if self.settings['Debug_Mode'] == 'y':
                     self.debugMode(str(e))
 
-    def createAccount(self):
+    
+    def bypassChallenge(self, session: httpx.Client, client_token: str, client_id: str, session_id: str, proxy: str = None):
+        while True:
+            try:
+                payload = {'session_id': session_id}
+
+                headers = {
+                    'accept': 'application/json',
+                    'accept-encoding': 'gzip',
+                    'accept-language': 'en-US',
+                    'app-platform': 'Android',
+                    'client-token': client_token,
+                    'connection': 'Keep-Alive',
+                    'content-type': 'application/json',
+                    'host': 'spclient.wg.spotify.com',
+                    'spotify-app-version': '8.8.56.538',
+                    'user-agent': 'Spotify/8.8.56.538 Android/28 (SM-S908E)',
+                    'x-client-id': client_id
+                }
+
+                r = session.post('https://spclient.wg.spotify.com/challenge-orchestrator/v1/get-session',headers=headers, json=payload)
+
+
+                if r.status_code == 200:
+
+                    url = str(r.url)               
+
+                    challenge_url: str = r.json()['in_progress']['challenge_details']['web_challenge_launcher']['url']
+                    challenge_id = challenge_url.split('/')[-2]
+
+
+                    headers = {
+                        'authority': 'challenge.spotify.com',
+                        'accept': 'application/json',
+                        'accept-language': 'en-US,en;q=0.9',
+                        'content-type': 'application/json',
+                        'origin': 'https://challenge.spotify.com',
+                        'referer': url,
+                        'sec-ch-ua': '"Not/A)Brand";v="99", "Google Chrome";v="115", "Chromium";v="115"',
+                        'sec-ch-ua-mobile': '?0',
+                        'sec-ch-ua-platform': '"Windows"',
+                        'sec-fetch-dest': 'empty',
+                        'sec-fetch-mode': 'cors',
+                        'sec-fetch-site': 'same-origin',
+                    }  
+
+                    if challenge_url.endswith('recaptcha'):
+                        self.console.printe(f'Account not created. Recaptcha challenges cannot be solved at this time. If you are constantly getting this error, try again with quality proxies.')
+                        break
+                    elif challenge_url.endswith('dummy'):
+                        payload = {
+                           'session_id': session_id,
+                           'challenge_id': challenge_id,
+                           'dummy_challenge_v1': {'noop': {}}
+                        }
+                    else:
+                        self.console.printe(f'Account not created. Error: {r.text}')
+
+                    r = session.post('https://challenge.spotify.com/api/v1/invoke-challenge-command', headers=headers, json=payload)
+                    if r.status_code == 200:
+                        r = httpx.post('https://spclient.wg.spotify.com/signup/public/v2/account/complete-creation', headers=headers, json={'session_id': session_id})
+                        if r.status_code == 200 and 'success' in r.text:
+                            return r.json()['success']
+                        else:
+                            self.console.printe('Failed bypassing challenge. Retrying...')
+                            if self.settings['Debug_Mode'] == 'y':
+                                self.debugMode(r.text, r.status_code)
+            except Exception as e:
+                self.console.printe('Error bypassing, retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(str(e))
+                continue
+
+    def createAccount(self, session: httpx.Client, username: str, mail: str, password: str, client_token: str, inbox, emailnator, account_data: dict):
+        while True:
+            try:
+                self.console.printsc(f'Account has been created with the name {username}.')
+
+                if self.verification_settings['Verify_Mail'] == 'y':
+                    if not ('@gmail.com' in mail):
+                        verification_link = self.mail_tm.getVerificationLink(inbox[2])
+                    else:
+                        verification_link = emailnator.get_verification_link(mail)
+
+                    self.verifyMail(session, verification_link)
+
+                account_id = account_data['username']
+                login_token = account_data['login_token']
+
+                token = self.getToken(session, login_token)
+
+
+                if self.settings['Change_Avatar'] == 'y':
+                    self.changeAvatar(session, client_token, token, account_id)
+
+                if self.follow_types['Profile'] == 'y':
+                    self.followAccount(session, client_token, token)
+
+                if self.follow_types['Playlist'] == 'y':
+                    self.followPlaylist(session, client_token, token)
+
+                if self.follow_types['Artist'] == 'y':
+                    self.followArtist(session, client_token, token)
+
+                if self.save_methods['Text_File'] == 'y':
+                    with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
+                        f.write(f'{username}:{mail}:{password}\n')   
+                    with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
+                        f.write(f'{token}\n')
+
+                if self.save_methods['SQLite'] == 'y':
+                     self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
+                     self.connection.commit()
+
+                Console.created += 1
+                break
+            
+            except Exception as e:
+                self.console.printe('Error humanization, retrying...')
+                if self.settings['Debug_Mode'] == 'y':
+                    self.debugMode(str(e))
+                continue
+    def main(self):
         while (self.target_settings['Use_Target'] == 'y' and Console.created < self.target_settings['Target_To']) or (
                 self.target_settings['Use_Target'] != 'y'):
             try:
                 if self.settings['Use_Proxy'] == 'y':
                     proxy = choice(self.proxies)
-                    proxies = {"http://": f"http://{proxy}", "https://": f"http://{proxy}"}
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, proxies=proxies, timeout=30)
+                    print(proxy)
+                    proxies = {'http://': f'http://{proxy}', 'https://': f'http://{proxy}'}
+                    session = httpx.Client(headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'}, proxies=proxies, timeout=30)
                 else:
-                    session = httpx.Client(headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/110.0"}, timeout=30)
+                    session = httpx.Client(headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'}, timeout=30)
                 username = self.faker.getUsername(self.settings['Create_Username'])
 
                 if self.verification_settings['Verify_Mail'] == 'y':
                     if choice(self.mail_services) == 'Use_MailTM':
-                        inbox = self.mail_tm.generateMail(proxies=proxies if self.settings['Use_Proxy'] else None)
+                        inbox = self.mail_tm.generateMail(proxies=proxies if self.settings['Use_Proxy'] == 'y' else None)
                         mail = inbox[0]
                     else:
                         emailnator = Emailnator()
@@ -442,102 +586,92 @@ class Gen:
                 birthday = self.faker.getBirthday()
 
                 client_token = self.getClientToken(session)
-
+                
+                client_id = str(uuid4()).replace('-', '')
+                
                 payload = {
-                    "account_details": {
-                        "birthdate": birthday,
-                        "consent_flags": {
-                            "eula_agreed": True,
-                            "send_email": True,
-                            "third_party_email": True
-                        },
-                        "display_name": username,
-                        "email_and_password_identifier": {
-                            "email": mail,
-                            "password": password
-                        },
-                        "gender": randint(1, 2)
+                    'account_details': {
+                        'birthdate': birthday,
+                        'consent_flags': {'eula_agreed': True, 'send_email': True, 'third_party_email': True},
+                        'display_name': username,
+                        'email_and_password_identifier': {'email': mail, 'password': password},
+                        'gender': randint(1, 2)
                     },
-                    "callback_uri": "https://auth-callback.spotify.com/r/android/music/signup",
-                    "client_info": {
-                        "api_key": "142b583129b2df829de3656f9eb484e6",
-                        "app_version": "v2",
-                        "capabilities": [1],
-                        "installation_id": str(uuid4()),
-                        "platform": "Android-ARM"
+                    'callback_uri': 'https://auth-callback.spotify.com/r/android/music/signup',
+                    'client_info': {
+                        'api_key': '142b583129b2df829de3656f9eb484e6',
+                        'app_version': '8.8.56.538',
+                        'capabilities': [1],
+                        'installation_id': str(uuid4()),
+                        'platform': 'Android-ARM'
                     },
-                    "tracking": {
-                        "creation_flow": "",
-                        "creation_point": "client_mobile",
-                        "referrer": ""
+                    'tracking': {
+                        'creation_flow': '',
+                        'creation_point': 'client_mobile',
+                        'referrer': ''
                     }
                 }
-
+                
+                
                 headers = {
-                    'accept': '*/*',
+                    'accept': 'application/json',
                     'accept-encoding': 'gzip',
-                    'accept-language': 'en-US;q=0.5',
-                    "app-platform": "Android",
+                    'accept-language': 'en-US',
+                    'app-platform': 'Android',
                     'client-token': client_token,
                     'connection': 'Keep-Alive',
-                    'Origin': 'https://www.spotify.com',
-                    'content-length': str(len(json.dumps(payload))),
+                    'content-type': 'application/json',
                     'host': 'spclient.wg.spotify.com',
-                    'spotify-app-version': '8.8.0.347',
-                    'user-agent': 'Spotify/8.8.0.347 Android/25 (SM-G988N)',
-                    'x-client-id': str(uuid4()).replace('-', ''),
+                    'spotify-app-version': '8.8.56.538',
+                    'user-agent': 'Spotify/8.8.56.538 Android/28 (SM-S908E)',
+                    'x-client-id': client_id
                 }
 
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
 
                 if r.status_code == 200 and 'success' in r.text:
-                    self.console.printsc(f'Account has been created with the name {username}.')
-
                     if self.verification_settings['Verify_Mail'] == 'y':
-                        if not ('@gmail.com' in mail):
-                            verification_link = self.mail_tm.getVerificationLink(inbox[2])
+                        if '@gmail.com' in mail:
+                            self.createAccount(session, username, mail, password, client_token, None, emailnator, r.json()['success'])
                         else:
-                            verification_link = emailnator.get_verification_link(mail)
+                            self.createAccount(session, username, mail, password, client_token, inbox, None, r.json()['success'])
 
-                        self.verifyMail(session, verification_link)
+                    else:
+                        self.createAccount(session, username, mail, password, client_token, None, None, r.json()['success'])
 
-                    account_id = r.json()['success']['username']
-                    login_token = r.json()['success']['login_token']
+                elif 'challenge' in r.text:
+                    self.console.printi('Account not created. Bypassing captcha challenge...')
+                    session_id = r.json()['challenge']['session_id']
 
-                    token = self.getToken(session, login_token)
-
-                    if self.settings['Change_Avatar'] == 'y':
-                        self.changeAvatar(session, client_token, token, account_id)
-
-                    if self.follow_types['Profile'] == 'y':
-                        self.followAccount(session, client_token, token)
-
-                    if self.follow_types['Playlist'] == 'y':
-                        self.followPlaylist(session, client_token, token)
-
-                    if self.follow_types['Artist'] == 'y':
-                        self.followArtist(session, client_token, token)
-
-                    if self.save_methods['Text_File'] == 'y':
-                        with open('saved/accounts.txt', 'a', encoding='utf-8') as f:
-                            f.write(f"{username}:{mail}:{password}\n")
-                        with open('saved/tokens.txt', 'a', encoding='utf-8') as f:
-                            f.write(f"{token}\n")
-
-                    if self.save_methods['SQLite'] == 'y':
-                        self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)',
-                                            (account_id, username, mail, password, login_token, token))
-                        self.connection.commit()
-
-                    Console.created += 1
+                    if self.settings['Use_Proxy'] == 'y':
+                        account_data = self.bypassChallenge(session, client_token, client_id, session_id, proxy)
+                    else:
+                        account_data = self.bypassChallenge(session, client_token, client_id, session_id)
+                        
+                        
+                    if account_data is not None:
+                        if self.verification_settings['Verify_Mail'] == 'y':
+                            self.createAccount(session, username, mail, password, client_token, inbox, emailnator, account_data)
+                        else:
+                            self.createAccount(session, username, mail, password, client_token, None, None, account_data)
 
                 elif 'VPN' in r.text:
                     try:
-                        self.console.printe(f'Account not created. Bad proxies: {proxy}')
+                        self.console.printe(f'Account not created. Bad proxy: {proxy}')
                         if self.settings['Remove_Bad_Proxies'] == 'y':
                             self.proxies.remove(proxy)
                     except UnboundLocalError:
-                        self.console.printe(f'Account not created. Please don\'t use the tool with VPN.')
+                        self.console.printe(f'Account not created. Please don\'t use the tool with VPN. If you are not using a VPN, you are in a location that cannot use this app. Please run the program using a proxy.')
+                
+                elif 'invalid_country' in r.text:
+                    try:
+                        self.console.printe(f'Account not created. Proxy\'s location is not suitable for Spotify.: {proxy}')
+                        if self.settings['Remove_Bad_Proxies'] == 'y':
+                            self.proxies.remove(proxy)
+                    except UnboundLocalError:
+                        self.console.printe(f'Account not created. Please don\'t use the tool with VPN. If you are not using a VPN, you are in a location that cannot use this app. Please run the program using a proxy.')
+                              
+                
                 else:
                     self.console.printe('Account not created.')
                     if self.settings['Debug_Mode'] == 'y':
@@ -547,12 +681,12 @@ class Gen:
                 self.console.printe(f'{str(e).capitalize()}. Retrying...')
                 continue
 
-        self.console.printtc(threading.current_thread().name.rstrip(' (createAccount)').replace('-', ' ') + ' is closed.')
+        self.console.printtc(threading.current_thread().name.rstrip(' (main)').replace('-', ' ') + ' is closed.')
 
     def start(self):
         threading.Thread(target=self.tools.titleChanger, args=[self.target_settings['Use_Target'], self.target_settings['Target_To']], name='Title Changer').start()
         while threading.active_count() < self.settings['Threads'] + 2:
-            threading.Thread(target=self.createAccount).start()
+            threading.Thread(target=self.main).start()
 
 
 if __name__ == '__main__':

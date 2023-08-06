@@ -20,7 +20,7 @@ class Mail:
         try:
             self.domain = httpx.get('https://api.mail.tm/domains?page=1', headers=headers, timeout=10).json()['hydra:member'][0]['domain']
         except Exception:
-            self.domain = 'bugfoo.com'
+            self.domain = 'exelica.com'
 
     def generateMail(self, proxies = None) -> tuple:
         while True:
