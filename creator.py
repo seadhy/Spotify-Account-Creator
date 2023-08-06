@@ -551,7 +551,6 @@ class Gen:
                      self.cursor.execute('Insert into accounts Values(?,?,?,?,?,?)', (account_id, username, mail, password, login_token, token))
                      self.connection.commit()
 
-                Console.created += 1
                 break
             
             except Exception as e:
@@ -630,6 +629,9 @@ class Gen:
                 r = session.post(url='https://spclient.wg.spotify.com/signup/public/v2/account/create', headers=headers, json=payload)
 
                 if r.status_code == 200 and 'success' in r.text:
+                    
+                    Console.created += 1
+                    
                     if self.verification_settings['Verify_Mail'] == 'y':
                         if '@gmail.com' in mail:
                             self.createAccount(session, username, mail, password, client_token, None, emailnator, r.json()['success'])
@@ -650,6 +652,7 @@ class Gen:
                         
                         
                     if account_data is not None:
+                        Console.created += 1
                         if self.verification_settings['Verify_Mail'] == 'y':
                             self.createAccount(session, username, mail, password, client_token, inbox, emailnator, account_data)
                         else:
@@ -665,7 +668,7 @@ class Gen:
                 
                 elif 'invalid_country' in r.text:
                     try:
-                        self.console.printe(f'Account not created. Proxy\'s location is not suitable for Spotify.: {proxy}')
+                        self.console.printe(f'Account not created. Proxy\'s location is not suitable for Spotify: {proxy}')
                         if self.settings['Remove_Bad_Proxies'] == 'y':
                             self.proxies.remove(proxy)
                     except UnboundLocalError:
