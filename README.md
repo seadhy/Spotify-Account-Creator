@@ -1,8 +1,8 @@
 <h3>
         <h3>CapSolver.com</h3>
         <br>
-        <a href="https://dashboard.capsolver.com/passport/register?inviteCode=G2QOL-c1l_7z">
-            <img src="https://cdn.discordapp.com/attachments/1105172394655625306/1105180101802471575/20221207-160749.gif" alt="Capsolver's Banner">
+        <a href="https://dashboard.capsolver.com/passport/register?inviteCode=Bx7awAVHUPkY">
+            <img src="https://cdn.discordapp.com/attachments/1139171433436684288/1139244499311284324/20230809-142857.gif" alt="Capsolver's Banner">
         </a>
 </h3>
 <br>
