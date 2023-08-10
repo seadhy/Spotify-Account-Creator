@@ -1,3 +1,14 @@
+<h3>
+        <h3>CapSolver.com</h3>
+        <br>
+        <a href="https://dashboard.capsolver.com/passport/register?inviteCode=G2QOL-c1l_7z">
+            <img src="https://cdn.discordapp.com/attachments/1105172394655625306/1105180101802471575/20221207-160749.gif" alt="Capsolver's Banner">
+        </a>
+</h3>
+<br>
+At the lowest price on the market, you may receive a variety of solutions, including reCAPTCHA V2, reCAPTCHA V3, hCaptcha, hCaptcha Click, FunCaptcha, picture-to-text, and more. With this service, 0.1s is the slowest speed ever measured.
+<hr>
+
 # Spotify Account Creator + Follower 
  Spotify Account Creator + Follow account or playlist with fully httpx request based. If an error occurs, please report it via [issues](https://github.com/seadhy/Spotify-Account-Creator/issues/new).
 
